@@ -25,3 +25,10 @@ services:
       - POSTGRES_DB=ewm-stats
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
+
+  main-service:
+    build: main-service
+    image: main-service
+    container_name: main-service
+    ports:
+      - "8080:8080"
