@@ -8,11 +8,9 @@
         <artifactId>explore-with-me</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <packaging>pom</packaging>
 
+    <packaging>pom</packaging>
     <artifactId>statistic-service</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <groupId>ru.practicum.stats</groupId>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
