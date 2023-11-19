@@ -15,16 +15,31 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Клиент для взаимодействия с сервером статистики.
+ */
 @Service
 public class StatisticClient extends BaseClient {
+
     @Value("${statistic-server.dateFormat}")
     private static String format;
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
 
+    /**
+     * Конструктор класса StatisticClient.
+     *
+     * @param rest Объект RestTemplate для взаимодействия с сервером.
+     */
     public StatisticClient(RestTemplate rest) {
         super(rest);
     }
 
+    /**
+     * Конструктор класса StatisticClient.
+     *
+     * @param serverUrl Адрес сервера статистики.
+     * @param builder   Объект RestTemplateBuilder для настройки RestTemplate.
+     */
     @Autowired
     public StatisticClient(@Value("${statistic-server.url}") String serverUrl, RestTemplateBuilder builder) {
         super(
@@ -35,10 +50,25 @@ public class StatisticClient extends BaseClient {
         );
     }
 
+    /**
+     * Отправляет данные о хите на сервер статистики.
+     *
+     * @param endpointHitDto DTO объект с данными об обращении к endpoint`у.
+     * @return Объект ResponseEntity с результатом операции.
+     */
     public ResponseEntity<Object> addStatistic(EndpointHitDto endpointHitDto) {
         return post("/hit", endpointHitDto);
     }
 
+    /**
+     * Получает статистику за определенный период времени и для указанных URIs.
+     *
+     * @param start  Начальная дата и время.
+     * @param end    Конечная дата и время.
+     * @param uris   Список URIs, для которых запрашивается статистика.
+     * @param unique Флаг, указывающий, нужно ли возвращать обращения по уникальным ip адресам.
+     * @return Объект ResponseEntity с результатом операции.
+     */
     public ResponseEntity<Object> getStatistic(LocalDateTime start, LocalDateTime end,
                                                List<String> uris,
                                                Boolean unique) {
