@@ -5,7 +5,7 @@ import ru.practicum.mainservice.dto.NewCategoryDto;
 import ru.practicum.mainservice.model.Category;
 
 /**
- * Маппер для преобразования объектов {@link Category} и {@link CategoryDto}.
+ * Маппер для преобразования объектов {@link Category}, {@link CategoryDto} и {@link NewCategoryDto}.
  */
 public class CategoryMapper {
 

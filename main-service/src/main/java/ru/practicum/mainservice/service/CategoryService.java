@@ -30,7 +30,7 @@ public interface CategoryService {
      *
      * @param categoryId Идентификатор категории.
      */
-    void deleteCategory(long categoryId);
+    void deleteCategoryById(long categoryId);
 
     /**
      * Получает категорию по её идентификатору.
@@ -38,7 +38,7 @@ public interface CategoryService {
      * @param categoryId Идентификатор категории.
      * @return Категория с заданным идентификатором.
      */
-    Category getCategory(long categoryId);
+    Category getCategoryById(long categoryId);
 
     /**
      * Получает коллекцию категорий с применением пагинации.
