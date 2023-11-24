@@ -4,8 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.mainservice.dto.NewUserRequest;
-import ru.practicum.mainservice.dto.UserDto;
+import ru.practicum.mainservice.dto.user.NewUserRequest;
+import ru.practicum.mainservice.dto.user.UserDto;
 import ru.practicum.mainservice.mapper.UserMapper;
 import ru.practicum.mainservice.model.User;
 import ru.practicum.mainservice.service.UserService;
@@ -54,7 +54,7 @@ public class UserControllerAdmin {
     /**
      * Обрабатывает HTTP-запрос GET для получения коллекции пользователей с пагинацией.
      *
-     * @param ids Список идентификаторов.
+     * @param ids  Список идентификаторов.
      * @param from Начальный индекс для пагинации.
      * @param size Количество элементов на странице.
      * @return Ответ с коллекцией пользователей и статусом 200 OK.

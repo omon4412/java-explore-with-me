@@ -18,15 +18,14 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EndpointHitDto {
-    private Long id;
     private String app;
     private String uri;
 
     /**
      * IP-адрес, совершившего обращение.
      */
-    @Size(max = 15)
-    @Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$")
+    //@Size(max = 15)
+    //@Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$")
     private String ip;
 
     /**
