@@ -33,8 +33,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public Collection<User> getUsers(Collection<Long> ids, Integer from, Integer size) {
         if (ids.isEmpty()) {
-            return userRepository.findAll(PageRequest.of(from, size)).getContent();
+            return userRepository.findAll(PageRequest.of(from / size, size)).getContent();
         }
-        return userRepository.findAllByIdIn(ids, PageRequest.of(from, size)).getContent();
+        return userRepository.findAllByIdIn(ids, PageRequest.of(from / size, size)).getContent();
     }
 }

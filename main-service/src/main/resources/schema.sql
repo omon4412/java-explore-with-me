@@ -1,8 +1,10 @@
 DROP TABLE IF EXISTS events CASCADE;
---
--- DROP TABLE IF EXISTS users CASCADE;
---
--- DROP TABLE IF EXISTS categories CASCADE;
+
+DROP TABLE IF EXISTS users CASCADE;
+
+DROP TABLE IF EXISTS categories CASCADE;
+
+DROP TABLE IF EXISTS requests CASCADE;
 
 
 CREATE TABLE IF NOT EXISTS categories
@@ -27,9 +29,9 @@ create table if not exists events
         constraint events_categories_category_id_fk
             references categories,
     annotation         varchar(2000)         not null,
-    created_on         varchar(50)           not null,
+    created_on         timestamp             not null,
     description        varchar(7000)         not null,
-    event_date         varchar(30)           not null,
+    event_date         timestamp             not null,
     initiator_id       int                   not null
         constraint events_users_user_id_fk
             references users,
@@ -37,9 +39,22 @@ create table if not exists events
     location_longitude DOUBLE PRECISION      not null,
     paid               boolean default false not null,
     participant_limit  int     default 0     not null,
-    published_on       varchar(30),
+    published_on       timestamp,
     request_moderation boolean default true  not null,
     state              varchar(50)           not null,
     title              varchar(128)          not null
+);
+
+CREATE TABLE IF NOT EXISTS requests
+(
+    request_id   INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
+    event_id     INT         NOT NULL
+        constraint requests_events_event_id_fk
+            references events,
+    requester_id INT         NOT NULL
+        constraint requests_users_user_id_fk
+            references users,
+    created      timestamp   not null,
+    status       varchar(50) not null
 );
 

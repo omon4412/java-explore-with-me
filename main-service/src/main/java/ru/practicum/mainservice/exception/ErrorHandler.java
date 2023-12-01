@@ -4,6 +4,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -32,6 +33,44 @@ public class ErrorHandler {
                 .message(ex.getMessage())
                 .reason("Запрашиваемый объект не найден")
                 .status(HttpStatus.NOT_FOUND.name())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * Обработчик исключения {@link BadRequestException}.
+     * Возникает, когда приходят неверные данные.
+     *
+     * @param ex Исключение {@link BadRequestException}
+     * @return Объект {@link ApiError} с информацией об ошибках
+     */
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleBadRequestException(final BadRequestException ex) {
+        return ApiError.builder()
+                .errors(ex.getStackTrace())
+                .message(ex.getMessage())
+                .reason("Неверные данные")
+                .status(HttpStatus.BAD_REQUEST.name())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * Обработчик исключения {@link ConflictException}.
+     * Возникает, когда происходит конфликт в данных.
+     *
+     * @param ex Исключение {@link ConflictException}
+     * @return Объект {@link ApiError} с информацией об ошибках
+     */
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ConflictException ex) {
+        return ApiError.builder()
+                .errors(ex.getStackTrace())
+                .message(ex.getMessage())
+                .reason("Конфликт в данных")
+                .status(HttpStatus.CONFLICT.name())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
@@ -112,6 +151,24 @@ public class ErrorHandler {
                 .build();
     }
 
+    /**
+     * Обработчик исключения {@link MissingServletRequestParameterException}.
+     * Возникает, когда отсутствует обязательный параметр.
+     *
+     * @param ex Исключение {@link MissingServletRequestParameterException}
+     * @return Объект {@link ApiError} с информацией об ошибке
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleMissingParams(MissingServletRequestParameterException ex) {
+        return ApiError.builder()
+                .errors(ex.getStackTrace())
+                .message("Отсутствует обязательный параметр -" + ex.getParameterName())
+                .reason("Отсутствует обязательный параметр")
+                .status(HttpStatus.CONFLICT.toString())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
 
     /**
      * Обработчик всевозможных исключений во время работы программы.

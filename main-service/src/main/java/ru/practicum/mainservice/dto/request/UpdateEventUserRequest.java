@@ -1,42 +1,34 @@
-package ru.practicum.mainservice.dto.event;
+package ru.practicum.mainservice.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import ru.practicum.mainservice.model.Location;
+import ru.practicum.mainservice.model.StateAction;
 
-import javax.validation.Valid;
-import javax.validation.constraints.*;
+import javax.validation.constraints.Future;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 /**
- * DTO для создания нового события.
+ * Запрос на обновление информации о событии пользователем.
  */
 @Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class NewEventDto {
+public class UpdateEventUserRequest {
     /**
-     * Идентификатор категории события.
+     * Категория события.
      */
-    @Positive
-    @NotNull
-    protected long category;
+    protected Long category;
 
     /**
      * Аннотация события.
      */
-    @NotBlank
     @Size(min = 20, max = 2000)
     protected String annotation;
 
     /**
      * Описание события.
      */
-    @NotBlank
     @Size(min = 20, max = 7000)
     protected String description;
 
@@ -45,36 +37,37 @@ public class NewEventDto {
      */
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @Future
-    @NotNull
     protected LocalDateTime eventDate;
 
     /**
      * Местоположение события.
      */
-    @Valid
     protected Location location;
 
     /**
      * Флаг оплаты события.
      */
-    protected boolean paid;
+    protected Boolean paid;
 
     /**
      * Лимит участников события.
      */
     @PositiveOrZero
-    @NotNull
-    protected long participantLimit;
+    protected Long participantLimit;
 
     /**
-     * Флаг модерации запросов на участие в событии.
+     * Флаг модерации события.
      */
     protected Boolean requestModeration;
 
     /**
      * Название события.
      */
-    @NotBlank
     @Size(min = 3, max = 120)
     protected String title;
+
+    /**
+     * Состояние события.
+     */
+    protected StateAction stateAction;
 }

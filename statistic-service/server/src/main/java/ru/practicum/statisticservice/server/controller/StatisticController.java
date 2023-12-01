@@ -55,7 +55,7 @@ public class StatisticController {
                                              @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") Optional<LocalDateTime> end,
                                              @RequestParam(required = false) List<String> uris,
                                              @RequestParam(defaultValue = "false") boolean unique) {
-        if(start.isEmpty() || end.isEmpty()){
+        if (start.isEmpty() || end.isEmpty()) {
             throw new BadRequestException("Даты должны быть обязательно");
         }
         return service.getStats(start.get(), end.get(), uris, unique);

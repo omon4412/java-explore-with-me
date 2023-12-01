@@ -53,6 +53,6 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Collection<Category> getCategories(Integer from, Integer size) {
-        return categoryRepository.findAll(PageRequest.of(from, size)).getContent();
+        return categoryRepository.findAll(PageRequest.of(from / size, size)).getContent();
     }
 }
