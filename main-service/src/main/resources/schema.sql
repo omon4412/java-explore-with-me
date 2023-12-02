@@ -1,11 +1,14 @@
 DROP TABLE IF EXISTS events CASCADE;
 
+DROP TABLE IF EXISTS compilations CASCADE;
+
+DROP TABLE IF EXISTS compilations_event CASCADE;
+
 DROP TABLE IF EXISTS users CASCADE;
 
 DROP TABLE IF EXISTS categories CASCADE;
 
 DROP TABLE IF EXISTS requests CASCADE;
-
 
 CREATE TABLE IF NOT EXISTS categories
 (
@@ -43,6 +46,24 @@ create table if not exists events
     request_moderation boolean default true  not null,
     state              varchar(50)           not null,
     title              varchar(128)          not null
+);
+
+CREATE TABLE IF NOT EXISTS compilations
+(
+    compilation_id serial primary key unique,
+    pinned         boolean     not null,
+    title          varchar(50) not null
+);
+
+CREATE TABLE IF NOT EXISTS compilations_event
+(
+    id             serial primary key unique,
+    event_id       int not null
+        constraint compilations_events_events_event_id_fk
+            references events,
+    compilation_id int not null
+        constraint compilations_events_compilations_compilation_id_fk
+            references compilations
 );
 
 CREATE TABLE IF NOT EXISTS requests

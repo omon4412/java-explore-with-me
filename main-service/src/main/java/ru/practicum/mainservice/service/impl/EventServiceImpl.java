@@ -386,7 +386,7 @@ public class EventServiceImpl implements EventService {
                 .ip(request.getRemoteAddr())
                 .timestamp(now)
                 .build());
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             throw new RuntimeException("Сервер статистики недоступен");
         }
     }
