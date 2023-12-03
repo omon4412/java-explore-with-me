@@ -1,19 +1,15 @@
 package ru.practicum.mainservice.dto.compilation;
 
-import lombok.Builder;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Set;
 
 /**
- * DTO для представления новой подборки.
+ * DTO для представления данных для обновления подборки.
  */
 @Data
-@Builder
-public class NewCompilationDto {
+public class UpdateCompilationRequest {
     /**
      * Идентификаторы событий, которые надо добавить в подборку.
      */
@@ -27,8 +23,6 @@ public class NewCompilationDto {
     /**
      * Заголовок подборки.
      */
-    @NotNull
-    @NotBlank
     @Size(min = 1, max = 50)
     protected String title;
 }

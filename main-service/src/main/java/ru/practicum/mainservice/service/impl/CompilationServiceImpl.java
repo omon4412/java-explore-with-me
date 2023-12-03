@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import ru.practicum.mainservice.dto.compilation.CompilationDto;
 import ru.practicum.mainservice.dto.compilation.NewCompilationDto;
+import ru.practicum.mainservice.dto.compilation.UpdateCompilationRequest;
 import ru.practicum.mainservice.exception.NotFoundException;
 import ru.practicum.mainservice.mapper.CompilationMapper;
 import ru.practicum.mainservice.model.Compilation;
@@ -69,6 +70,23 @@ public class CompilationServiceImpl implements CompilationService {
         Compilation compilation = getOptionalCompilation(compId).get();
         Set<Event> events = compilation.getEventsInCompilation();
         return getCompilationDto(compilation, new HashSet<>(events));
+    }
+
+    @Override
+    public CompilationDto updateCompilation(Long compId, UpdateCompilationRequest compilationRequest) {
+        Compilation compilation = getOptionalCompilation(compId).get();
+
+        if (compilationRequest.getPinned() != null) {
+            compilation.setPinned(compilationRequest.getPinned());
+        }
+        if (compilationRequest.getTitle() != null) {
+            compilation.setTitle(compilationRequest.getTitle());
+        }
+        if (compilationRequest.getEvents() != null) {
+            List<Event> events = eventRepository.findAllById(compilationRequest.getEvents());
+            return getCompilationDto(compilation, new HashSet<>(events));
+        }
+        return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }
 
     private CompilationDto getCompilationDto(Compilation compilation, HashSet<Event> events) {
