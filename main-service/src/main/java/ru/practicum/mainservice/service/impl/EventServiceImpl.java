@@ -337,6 +337,7 @@ public class EventServiceImpl implements EventService {
         if (text != null) {
             text = "%" + text.toLowerCase() + "%";
         }
+        addStatistics(request);
         Collection<Event> events = eventRepository.searchEventsPublic(text, categories, paid,
                 rangeStart, rangeEnd, pageable).getContent();
 
