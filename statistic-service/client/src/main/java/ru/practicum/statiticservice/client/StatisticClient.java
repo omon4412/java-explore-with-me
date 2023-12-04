@@ -20,10 +20,7 @@ import java.util.Map;
  */
 @Service
 public class StatisticClient extends BaseClient {
-
-    @Value("${statistic-server.dateFormat}")
-    private static String format;
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     /**
      * Конструктор класса StatisticClient.
