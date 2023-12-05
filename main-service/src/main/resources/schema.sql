@@ -12,6 +12,8 @@ DROP TABLE IF EXISTS requests CASCADE;
 
 DROP TABLE IF EXISTS comments CASCADE;
 
+DROP TABLE IF EXISTS comments_likes CASCADE;
+
 CREATE TABLE IF NOT EXISTS categories
 (
     category_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
@@ -83,11 +85,9 @@ CREATE TABLE IF NOT EXISTS requests
 
 CREATE TABLE IF NOT EXISTS comments
 (
-    comment_id          serial
-        primary key,
+    comment_id          serial primary key,
     event_id            integer       not null
-        constraint comments_events_event_id_fk
-            references events,
+        constraint comments_events_event_id_fk references events,
     author_id           integer       not null
         constraint comments_users_user_id_fk
             references users,
@@ -97,5 +97,15 @@ CREATE TABLE IF NOT EXISTS comments
             references comments on delete cascade,
     comment_date        timestamp     not null,
     update_date         timestamp
+);
+
+CREATE TABLE IF NOT EXISTS comments_likes
+(
+    comment_id integer not null
+        references comments on delete set null,
+    user_id    integer not null
+        references users on delete set null,
+    primary key (comment_id, user_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

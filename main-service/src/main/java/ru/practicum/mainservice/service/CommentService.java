@@ -48,6 +48,26 @@ public interface CommentService {
      */
     void deleteCommentByAdmin(Long commentId);
 
+    /**
+     * Получить все комментарии пользователя.
+     *
+     * @param userId     Идентификатор пользователя.
+     * @param text       Ключевое слово.
+     * @param events     Список идентификаторов событий, в которых искать комментарии.
+     * @param rangeStart Начало временного интервала для фильтрации комментариев.
+     * @param rangeEnd   Конец временного интервала для фильтрации комментариев.
+     * @param from       Индекс начального элемента для пагинации.
+     * @param size       Размер страницы для пагинации.
+     * @return Коллекция комментариев пользователя.
+     */
     Collection<CommentDto> getAllUserComments(Long userId, String text, List<Long> events, LocalDateTime rangeStart,
                                               LocalDateTime rangeEnd, int from, int size);
+
+    /**
+     * Поставить лайк комментарию.
+     *
+     * @param userId    Идентификатор пользователя, который ставит лайк.
+     * @param commentId Идентификатор комментарий, которому ставят лайк.
+     */
+    void addLikeToComment(Long userId, Long commentId);
 }

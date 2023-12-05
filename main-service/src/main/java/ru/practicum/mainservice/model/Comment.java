@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * Модель комментария.
@@ -76,4 +77,14 @@ public class Comment {
      */
     @Column(name = "update_date")
     protected LocalDateTime updateDate;
+
+    /**
+     * Лайки других пользователей.
+     */
+    @ManyToMany
+    @JoinTable(
+            name = "comments_likes",
+            joinColumns = @JoinColumn(name = "comment_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id"))
+    private Set<User> likes;
 }

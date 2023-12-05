@@ -11,6 +11,7 @@ paths:
   /users/{userId}/comments:
     post:
       summary: "Добавление нового комментария к событию"
+      description: "Писать комментарий может только НЕ автор события. Автор может только отвечать на другие комментарии своего события"
       operationId: "addCommentToEvent"
       parameters:
         - name: "userId"
@@ -211,6 +212,33 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/Void"
+  /users/{userId}/comments/{commentId}/like:
+    post:
+      summary: "Поставить лайк комментарию"
+      description: "На свой комментарий ставить лайк нельзя"
+      operationId: "likeComment"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя который ставит лайк"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария на который ставят лайк"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
 components:
   schemas:
     NewCommentDto:
@@ -249,6 +277,7 @@ components:
           $ref: "#/components/schemas/UserShortDto"
         isEventAuthor:
           type: "boolean"
+          description: "Флаг, указывает автор отвечает на комментарий или нет"
         text:
           type: "string"
           description: "Текст комментария"
@@ -265,6 +294,10 @@ components:
           type: "string"
           format: "date-time"
           description: "Последняя дата обновления комментария"
+        likeCount:
+          type: "integer"
+          format: "int64"
+          description: "Количество лайков пользователя"
     UpdateCommentDto:
       type: "object"
       description: "DTO для обновления комментария"

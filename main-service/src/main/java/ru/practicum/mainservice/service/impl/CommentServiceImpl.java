@@ -54,6 +54,7 @@ public class CommentServiceImpl implements CommentService {
         Comment result = commentRepository.save(comment);
         CommentDto resultCommentDto = CommentMapper.toCommentDto(result);
         resultCommentDto.setIsEventAuthor(userId.equals(event.getInitiator().getId()));
+        resultCommentDto.setLikeCount(0L);
         return resultCommentDto;
     }
 
@@ -73,6 +74,8 @@ public class CommentServiceImpl implements CommentService {
         comment.setUpdateDate(now);
         CommentDto resultCommentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
         resultCommentDto.setIsEventAuthor(userId.equals(comment.getEvent().getInitiator().getId()));
+        long likesCount = commentRepository.countLikesByComment(commentId);
+        resultCommentDto.setLikeCount(likesCount);
         return resultCommentDto;
     }
 
@@ -118,9 +121,22 @@ public class CommentServiceImpl implements CommentService {
                 .map(c -> {
                     CommentDto commentDto = CommentMapper.toCommentDto(c);
                     commentDto.setIsEventAuthor(c.getAuthor().getId().equals(c.getEvent().getInitiator().getId()));
+                    long likesCount = commentRepository.countLikesByComment(commentDto.getId());
+                    commentDto.setLikeCount(likesCount);
                     return commentDto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void addLikeToComment(Long userId, Long commentId) {
+        User user = getOptionalUser(userId).get();
+        Comment comment = getOptionalComment(commentId).get();
+        if (userId.equals(comment.getAuthor().getId())) {
+            throw new ConflictException("Нельзя ставить лайк своему комментарию");
+        }
+        comment.getLikes().add(user);
+        commentRepository.save(comment);
     }
 
     private Optional<User> getOptionalUser(long userId) {
@@ -129,14 +145,6 @@ public class CommentServiceImpl implements CommentService {
             throw new NotFoundException(String.format("Пользователь с ID=%d не найден", userId));
         }
         return userOptional;
-    }
-
-    private Optional<Event> getOptionalEvent(long eventId) {
-        Optional<Event> eventOptional = eventRepository.findById(eventId);
-        if (eventOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Событие с ID=%d не найдено", eventId));
-        }
-        return eventOptional;
     }
 
     private Optional<Event> getOptionalEventIfPublished(long eventId) {

@@ -10,6 +10,8 @@ import ru.practicum.mainservice.dto.comment.UpdateCommentDto;
 import ru.practicum.mainservice.service.CommentService;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Контроллер для обработки запросов по комментариям пользователей.
@@ -66,4 +68,28 @@ public class CommentControllerPrivate {
         commentService.deleteComment(userId, commentId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    /**
+     * Поставить лайк комментарию.
+     *
+     * @param userId    Идентификатор пользователя, который ставит лайк.
+     * @param commentId Идентификатор комментарий, которому ставят лайк.
+     * @return Ответ со статусом 200 OK.
+     */
+    @PostMapping("/{commentId}/like")
+    public ResponseEntity<Map<String, String>> likeComment(@PathVariable Long userId,
+                                                           @PathVariable Long commentId) {
+        commentService.addLikeToComment(userId, commentId);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "OK");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    ///TODO
+//    @PostMapping("/{commentId}/unlike")
+//    public ResponseEntity<Void> unlikeComment(@PathVariable Long userId,
+//                                                 @PathVariable Long commentId){
+//        commentService.removeLikeFromComment(userId, commentId);
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 }

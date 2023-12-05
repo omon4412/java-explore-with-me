@@ -366,7 +366,7 @@ public class EventServiceImpl implements EventService {
         getOptionalEvent(eventId);
         Collection<Comment> comments;
         if (keyWord == null) {
-            comments = commentRepository.findByEventId(eventId);
+            comments = commentRepository.findByEventIdAndParentCommentIsNull(eventId);
         } else {
             comments = commentRepository.findByEventIdAndText(eventId, keyWord);
         }
@@ -375,9 +375,44 @@ public class EventServiceImpl implements EventService {
                 .map(c -> {
                     CommentDto commentDto = CommentMapper.toCommentDto(c);
                     commentDto.setIsEventAuthor(c.getAuthor().getId().equals(c.getEvent().getInitiator().getId()));
+                    long likesCount = commentRepository.countLikesByComment(commentDto.getId());
+                    commentDto.setLikeCount(likesCount);
                     return commentDto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Выставить количество лайков всем дочерним комментариям.
+     * @param commentDto Родительский комментарий
+     */
+    private void setLikesRecursively(CommentDto commentDto) {
+        long likesCount = commentRepository.countLikesByComment(commentDto.getId());
+        commentDto.setLikeCount(likesCount);
+
+        for (CommentDto childComment : commentDto.getChildComments()) {
+            setLikesRecursively(childComment);
+        }
+    }
+
+    /**
+     * Выставить количество лайков родительскому всем дочерним комментариям.
+     * @param comment Родительский комментарий
+     * @return DTO комментария
+     */
+    private CommentDto mapCommentDtoRecursively(Comment comment) {
+        CommentDto commentDto = CommentMapper.toCommentDto(comment);
+        commentDto.setIsEventAuthor(comment.getAuthor().getId().equals(comment.getEvent().getInitiator().getId()));
+
+        long likesCount = commentRepository.countLikesByComment(commentDto.getId());
+        commentDto.setLikeCount(likesCount);
+
+        commentDto.getChildComments().forEach(childComment -> {
+            childComment.setIsEventAuthor(childComment.getAuthor().getId() == comment.getEvent().getInitiator().getId());
+            setLikesRecursively(childComment);
+        });
+
+        return commentDto;
     }
 
     private FullEventDto getFullEventDto(Event event) {
@@ -387,10 +422,12 @@ public class EventServiceImpl implements EventService {
         fullEventDto.setConfirmedRequests(confirmedRequestsCount);
         long hitCount = getHitCount(event.getId());
         fullEventDto.setViews(hitCount);
-        Collection<Comment> comments = commentRepository.findByEventId(event.getId());
+
+        Collection<Comment> comments = commentRepository.findByEventIdAndParentCommentIsNull(event.getId());
         fullEventDto.setComments(comments.stream()
-                .map(CommentMapper::toCommentDto)
+                .map(this::mapCommentDtoRecursively)
                 .collect(Collectors.toList()));
+
         return fullEventDto;
     }
 

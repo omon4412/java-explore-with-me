@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.mainservice.model.Comment;
-import ru.practicum.mainservice.model.RequestStatus;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -16,7 +15,7 @@ import java.util.List;
  * Jpa репозиторий комментариев.
  */
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    Collection<Comment> findByEventId(long eventId);
+    Collection<Comment> findByEventIdAndParentCommentIsNull(long eventId);
 
     @Query("SELECT c FROM Comment c WHERE " +
             "LOWER(c.text) LIKE LOWER(CONCAT('%', :text, '%')) " +
@@ -33,4 +32,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
                                      LocalDateTime rangeEnd, Pageable pageable);
 
     long countAllByEventId(long eventId);
+
+    @Query("SELECT c.likes.size FROM Comment c WHERE " +
+            "c.id = :commentId")
+    long countLikesByComment(Long commentId);
 }
