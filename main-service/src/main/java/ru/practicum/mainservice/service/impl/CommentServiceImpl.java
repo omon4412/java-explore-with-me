@@ -1,15 +1,19 @@
 package ru.practicum.mainservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.comment.NewCommentDto;
 import ru.practicum.mainservice.dto.comment.UpdateCommentDto;
+import ru.practicum.mainservice.exception.BadRequestException;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.NotFoundException;
 import ru.practicum.mainservice.mapper.CommentMapper;
 import ru.practicum.mainservice.model.Comment;
 import ru.practicum.mainservice.model.Event;
+import ru.practicum.mainservice.model.EventState;
 import ru.practicum.mainservice.model.User;
 import ru.practicum.mainservice.repository.CommentRepository;
 import ru.practicum.mainservice.repository.EventRepository;
@@ -17,8 +21,11 @@ import ru.practicum.mainservice.repository.UserRepository;
 import ru.practicum.mainservice.service.CommentService;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -30,7 +37,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public CommentDto addComment(Long userId, Long eventId, NewCommentDto commentDto) {
         User user = getOptionalUser(userId).get();
-        Event event = getOptionalEvent(eventId).get();
+        Event event = getOptionalEventIfPublished(eventId).get();
         Comment comment = CommentMapper.toComment(commentDto);
         if (commentDto.getParentCommentId() != null) {
             Comment parentComment = getOptionalComment(commentDto.getParentCommentId()).get();
@@ -54,6 +61,7 @@ public class CommentServiceImpl implements CommentService {
     public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto commentDto) {
         getOptionalUser(userId).get();
         Comment comment = getOptionalComment(commentId).get();
+        getOptionalEventIfPublished(comment.getEvent().getId());
         if (!userId.equals(comment.getAuthor().getId())) {
             throw new ConflictException("Нельзя редактировать чужой комментарий");
         }
@@ -88,6 +96,33 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    @Override
+    public Collection<CommentDto> getAllUserComments(Long userId, String text, List<Long> events, LocalDateTime rangeStart,
+                                                     LocalDateTime rangeEnd, int from, int size) {
+        getOptionalUser(userId).get();
+        Pageable pageable = PageRequest.of(from / size, size);
+        if (rangeStart != null && rangeEnd != null) {
+            if (rangeEnd.isBefore(rangeStart)) {
+                throw new BadRequestException("Дата окончания не может быть раньше даты начала");
+            }
+        } else {
+            rangeEnd = LocalDateTime.now();
+        }
+        if (text != null) {
+            text = "%" + text.toLowerCase() + "%";
+        }
+        Collection<Comment> comments = commentRepository.getAllUserComments(userId, text, events, rangeStart,
+                rangeEnd, pageable).getContent();
+
+        return comments.stream()
+                .map(c -> {
+                    CommentDto commentDto = CommentMapper.toCommentDto(c);
+                    commentDto.setIsEventAuthor(c.getAuthor().getId().equals(c.getEvent().getInitiator().getId()));
+                    return commentDto;
+                })
+                .collect(Collectors.toList());
+    }
+
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -98,6 +133,14 @@ public class CommentServiceImpl implements CommentService {
 
     private Optional<Event> getOptionalEvent(long eventId) {
         Optional<Event> eventOptional = eventRepository.findById(eventId);
+        if (eventOptional.isEmpty()) {
+            throw new NotFoundException(String.format("Событие с ID=%d не найдено", eventId));
+        }
+        return eventOptional;
+    }
+
+    private Optional<Event> getOptionalEventIfPublished(long eventId) {
+        Optional<Event> eventOptional = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED);
         if (eventOptional.isEmpty()) {
             throw new NotFoundException(String.format("Событие с ID=%d не найдено", eventId));
         }

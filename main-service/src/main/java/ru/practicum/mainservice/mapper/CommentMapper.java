@@ -15,19 +15,6 @@ public class CommentMapper {
     private CommentMapper() {
     }
 
-//    /**
-//     * Преобразует объект {@link CommentDto} в объект {@link Comment}.
-//     *
-//     * @param commentDto Объект {@link CommentDto}
-//     * @return Объект {@link Comment}
-//     */
-//    public static Comment toComment(CommentDto commentDto) {
-//        return Comment.builder()
-//                .id(commentDto.getId())
-//                .name(commentDto.getName())
-//                .build();
-//    }
-
     /**
      * Преобразует объект {@link NewCommentDto} в объект {@link Comment}.
      *

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.FullEventDto;
 import ru.practicum.mainservice.dto.event.NewEventDto;
@@ -21,13 +22,11 @@ import ru.practicum.mainservice.dto.request.UpdateEventUserRequest;
 import ru.practicum.mainservice.exception.BadRequestException;
 import ru.practicum.mainservice.exception.ConflictException;
 import ru.practicum.mainservice.exception.NotFoundException;
+import ru.practicum.mainservice.mapper.CommentMapper;
 import ru.practicum.mainservice.mapper.EventMapper;
 import ru.practicum.mainservice.mapper.RequestMapper;
 import ru.practicum.mainservice.model.*;
-import ru.practicum.mainservice.repository.CategoryRepository;
-import ru.practicum.mainservice.repository.EventRepository;
-import ru.practicum.mainservice.repository.RequestRepository;
-import ru.practicum.mainservice.repository.UserRepository;
+import ru.practicum.mainservice.repository.*;
 import ru.practicum.mainservice.service.EventService;
 import ru.practicum.statisticservice.dto.EndpointHitDto;
 import ru.practicum.statisticservice.dto.ViewStatsDto;
@@ -47,6 +46,7 @@ public class EventServiceImpl implements EventService {
     private final CategoryRepository categoryRepository;
     private final StatisticClient statisticClient;
     private final RequestRepository requestRepository;
+    private final CommentRepository commentRepository;
     @Value("${spring.application.name}")
     private String appName;
 
@@ -122,6 +122,8 @@ public class EventServiceImpl implements EventService {
                     long confirmedRequestsCount = requestRepository
                             .countAllByEventIdAndStatusIs(event.getId(), RequestStatus.CONFIRMED);
                     event.setConfirmedRequests(confirmedRequestsCount);
+                    long commentsCount = commentRepository.countAllByEventId(event.getId());
+                    event.setCommentsCount(commentsCount);
                 })
                 .collect(Collectors.toList());
     }
@@ -313,7 +315,7 @@ public class EventServiceImpl implements EventService {
         addStatistics(request);
         Event event = getOptionalEvent(eventId).get();
         if (event.getState() != EventState.PUBLISHED) {
-            throw new NotFoundException("Событие с ID=%d не найдено");
+            throw new NotFoundException(String.format("Событие с ID=%d не найдено", eventId));
         }
         return getFullEventDto(event);
     }
@@ -359,6 +361,25 @@ public class EventServiceImpl implements EventService {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Collection<CommentDto> getEventComments(long eventId, String keyWord) {
+        getOptionalEvent(eventId);
+        Collection<Comment> comments;
+        if (keyWord == null) {
+            comments = commentRepository.findByEventId(eventId);
+        } else {
+            comments = commentRepository.findByEventIdAndText(eventId, keyWord);
+        }
+
+        return comments.stream()
+                .map(c -> {
+                    CommentDto commentDto = CommentMapper.toCommentDto(c);
+                    commentDto.setIsEventAuthor(c.getAuthor().getId().equals(c.getEvent().getInitiator().getId()));
+                    return commentDto;
+                })
+                .collect(Collectors.toList());
+    }
+
     private FullEventDto getFullEventDto(Event event) {
         FullEventDto fullEventDto = EventMapper.toFullEventDto(event);
         long confirmedRequestsCount = requestRepository.countAllByEventIdAndStatusIs(event.getId(),
@@ -366,6 +387,10 @@ public class EventServiceImpl implements EventService {
         fullEventDto.setConfirmedRequests(confirmedRequestsCount);
         long hitCount = getHitCount(event.getId());
         fullEventDto.setViews(hitCount);
+        Collection<Comment> comments = commentRepository.findByEventId(event.getId());
+        fullEventDto.setComments(comments.stream()
+                .map(CommentMapper::toCommentDto)
+                .collect(Collectors.toList()));
         return fullEventDto;
     }
 
@@ -376,6 +401,8 @@ public class EventServiceImpl implements EventService {
         eventShortDto.setConfirmedRequests(confirmedRequestsCount);
         long hitCount = getHitCount(event.getId());
         eventShortDto.setViews(hitCount);
+        long commentsCount = commentRepository.countAllByEventId(event.getId());
+        eventShortDto.setCommentsCount(commentsCount);
         return eventShortDto;
     }
 

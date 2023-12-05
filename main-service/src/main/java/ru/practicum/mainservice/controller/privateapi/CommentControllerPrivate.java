@@ -18,8 +18,19 @@ import javax.validation.Valid;
 @RequestMapping(path = "/users/{userId}/comments")
 @RequiredArgsConstructor
 public class CommentControllerPrivate {
+    /**
+     * Сервис комментариев.
+     */
     private final CommentService commentService;
 
+    /**
+     * Добавление нового комментария к событию.
+     *
+     * @param userId     Идентификатор пользователя, который оставляет комментарий.
+     * @param eventId    Идентификатор события, к которому оставляют комментарий.
+     * @param commentDto Комментарий.
+     * @return ResponseEntity, содержащий добавленный комментарий к событию.
+     */
     @PostMapping
     public ResponseEntity<CommentDto> addCommentToEvent(@PathVariable long userId,
                                                         @RequestParam(value = "eventId") Long eventId,
@@ -27,6 +38,14 @@ public class CommentControllerPrivate {
         return new ResponseEntity<>(commentService.addComment(userId, eventId, commentDto), HttpStatus.CREATED);
     }
 
+    /**
+     * Редактирование своего комментария.
+     *
+     * @param userId     Идентификатор пользователя, который редактирует комментарий.
+     * @param commentDto Изменённый комментарий.
+     * @param commentId  Идентификатор комментария, который редактируют.
+     * @return ResponseEntity, содержащий обновлённый комментарий к событию.
+     */
     @PatchMapping("/{commentId}")
     public ResponseEntity<CommentDto> updateCommentToEvent(@PathVariable long userId,
                                                            @Valid @RequestBody UpdateCommentDto commentDto,
@@ -34,6 +53,13 @@ public class CommentControllerPrivate {
         return new ResponseEntity<>(commentService.updateComment(userId, commentId, commentDto), HttpStatus.OK);
     }
 
+    /**
+     * Удаление своего комментария.
+     *
+     * @param userId    Идентификатор пользователя, который удаляет комментарий.
+     * @param commentId Идентификатор комментария, который удаляют.
+     * @return Ответ со статусом 204 No Content.
+     */
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteCommentToEvent(@PathVariable long userId,
                                                      @PathVariable Long commentId) {

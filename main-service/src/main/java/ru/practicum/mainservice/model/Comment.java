@@ -11,6 +11,9 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
+/**
+ * Модель комментария.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,33 +21,59 @@ import java.util.Collection;
 @Entity
 @Table(name = "comments")
 public class Comment {
+
+    /**
+     * Идентификатор комментария.
+     */
     @Id
     @Column(name = "comment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected Long id;
 
+    /**
+     * Событие, к которому относится комментарий.
+     */
     @ManyToOne
     @JoinColumn(name = "event_id")
     protected Event event;
 
+    /**
+     * Автор комментария.
+     */
     @ManyToOne
     @JoinColumn(name = "author_id")
     protected User author;
 
+    /**
+     * Текст комментария.
+     */
     @Column(name = "text")
     protected String text;
 
+    /**
+     * Родительский комментарий.
+     */
     @ManyToOne
     @JoinColumn(name = "parent_comment_id")
     @JsonIgnore
     protected Comment parentComment;
 
+    /**
+     * Дочерние комментарии.
+     */
     @OneToMany(mappedBy = "parentComment", fetch = FetchType.LAZY)
     @JsonIgnoreProperties("parentComment")
     protected Collection<Comment> childComments;
 
+    /**
+     * Дата создания комментария.
+     */
     @Column(name = "comment_date")
     protected LocalDateTime commentDate;
+
+    /**
+     * Дата последнего обновления комментария.
+     */
     @Column(name = "update_date")
     protected LocalDateTime updateDate;
 }

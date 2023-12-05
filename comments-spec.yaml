@@ -1,0 +1,277 @@
+openapi: "3.0.3"
+info:
+  title: "Comments API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: "CommentController"
+    description: "API для работы с комментариями"
+paths:
+  /users/{userId}/comments:
+    post:
+      summary: "Добавление нового комментария к событию"
+      operationId: "addCommentToEvent"
+      parameters:
+        - name: "userId"
+          description: "Идентификатор пользователя, который оставляет комментарий"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "eventId"
+          in: "query"
+          description: "Идентификатор события, к которому оставляют комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewCommentDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentDto"
+  /users/{userId}/comments/{commentId}:
+    patch:
+      summary: "Редактирование своего комментария."
+      description: "Редактировать комментарий можно только в течении 2-ух часов после публикации"
+      operationId: "updateCommentToEvent"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя, который редактирует комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария, которое редактируют"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommentDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentDto"
+    delete:
+      summary: "Удаление своего комментария"
+      description: "Удалить комментарий можно только в течении 2-ух часов после публикации"
+      operationId: "deleteCommentToEvent"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя, который удаляет комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария, который удаляют"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+  /events/{eventId}/comments:
+    get:
+      summary: "Поиск всех комментариев или по ключевым словам"
+      operationId: "getEventComments"
+      parameters:
+        - name: "eventId"
+          in: "path"
+          description: "Идентификатор события"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "keyWord"
+          in: "query"
+          description: "Ключевое слово"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/CommentDto"
+  /admin/comments:
+    get:
+      summary: "Запрос на получение всех комментариев пользователя администратором"
+      operationId: "getAllUserComments"
+      parameters:
+        - name: "userId"
+          in: "query"
+          description: "Идентификатор пользователя"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "text"
+          in: "query"
+          description: "Ключевое слово"
+          required: false
+          schema:
+            type: "string"
+        - name: "events"
+          in: "query"
+          description: "Список идентификаторов событий, в которых искать комментарии"
+          required: false
+          schema:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+        - name: "rangeStart"
+          in: "query"
+          description: "Начало временного интервала для фильтрации комментариев"
+          required: false
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "rangeEnd"
+          in: "query"
+          description: "Конец временного интервала для фильтрации комментариев"
+          required: false
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "from"
+          in: "query"
+          description: "Индекс начального элемента для пагинации"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "0"
+        - name: "size"
+          in: "query"
+          description: "Размер страницы для пагинации"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/CommentDto"
+  /admin/comments/{commentId}:
+    delete:
+      summary: "Запрос на удаление комментария администратором"
+      operationId: "deleteCommentToEventAdmin"
+      parameters:
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+components:
+  schemas:
+    NewCommentDto:
+      description: "DTO для создания нового комментария"
+      type: "object"
+      properties:
+        text:
+          type: "string"
+          description: "Текст комментария"
+          minLength: 10
+          maxLength: 1000
+        parentCommentId:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор сообщения, на которое отвечают"
+    UserShortDto:
+      type: "object"
+      description: "Пользователь (краткая информация)"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор"
+        name:
+          type: "string"
+          description: "Имя"
+    CommentDto:
+      type: "object"
+      description: "DTO для представления комментария"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор"
+        author:
+          $ref: "#/components/schemas/UserShortDto"
+        isEventAuthor:
+          type: "boolean"
+        text:
+          type: "string"
+          description: "Текст комментария"
+        childComments:
+          type: "array"
+          description: "Ответы на комментарии"
+          items:
+            $ref: "#/components/schemas/CommentDto"
+        commentDate:
+          type: "string"
+          format: "date-time"
+          description: "Дата публикации комментария"
+        updateDate:
+          type: "string"
+          format: "date-time"
+          description: "Последняя дата обновления комментария"
+    UpdateCommentDto:
+      type: "object"
+      description: "DTO для обновления комментария"
+      properties:
+        text:
+          type: "string"
+          description: "Новый текст комментария"
+    Void:
+      type: "object"
+      properties: { }
