@@ -82,6 +82,12 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.deleteById(commentId);
     }
 
+    @Override
+    public void deleteCommentByAdmin(Long commentId) {
+        getOptionalComment(commentId).get();
+        commentRepository.deleteById(commentId);
+    }
+
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
