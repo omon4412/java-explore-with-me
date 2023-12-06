@@ -85,11 +85,19 @@ public class CommentControllerPrivate {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    ///TODO
-//    @PostMapping("/{commentId}/unlike")
-//    public ResponseEntity<Void> unlikeComment(@PathVariable Long userId,
-//                                                 @PathVariable Long commentId){
-//        commentService.removeLikeFromComment(userId, commentId);
-//        return new ResponseEntity<>(HttpStatus.OK);
-//    }
+    /**
+     * Убрать лайк у комментария.
+     *
+     * @param userId    Идентификатор пользователя, который убирает лайк.
+     * @param commentId Идентификатор комментарий, у которого убирают лайк.
+     * @return Ответ со статусом 200 OK.
+     */
+    @PostMapping("/{commentId}/unlike")
+    public ResponseEntity<Map<String, String>> unlikeComment(@PathVariable Long userId,
+                                                             @PathVariable Long commentId) {
+        commentService.removeLikeFromComment(userId, commentId);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "OK");
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

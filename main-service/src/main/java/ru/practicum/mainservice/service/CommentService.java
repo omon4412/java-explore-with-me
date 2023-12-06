@@ -70,4 +70,12 @@ public interface CommentService {
      * @param commentId Идентификатор комментарий, которому ставят лайк.
      */
     void addLikeToComment(Long userId, Long commentId);
+
+    /**
+     * Убрать лайк у комментария.
+     *
+     * @param userId    Идентификатор пользователя, который убирает лайк.
+     * @param commentId Идентификатор комментарий, у которого убирают лайк.
+     */
+    void removeLikeFromComment(Long userId, Long commentId);
 }

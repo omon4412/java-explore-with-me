@@ -384,6 +384,7 @@ public class EventServiceImpl implements EventService {
 
     /**
      * Выставить количество лайков всем дочерним комментариям.
+     *
      * @param commentDto Родительский комментарий
      */
     private void setLikesRecursively(CommentDto commentDto) {
@@ -397,6 +398,7 @@ public class EventServiceImpl implements EventService {
 
     /**
      * Выставить количество лайков родительскому всем дочерним комментариям.
+     *
      * @param comment Родительский комментарий
      * @return DTO комментария
      */
@@ -415,6 +417,12 @@ public class EventServiceImpl implements EventService {
         return commentDto;
     }
 
+    /**
+     * Получает DTO для полного события на основе объекта Event.
+     *
+     * @param event Объект Event.
+     * @return FullEventDto, содержащий полную информацию о событии.
+     */
     private FullEventDto getFullEventDto(Event event) {
         FullEventDto fullEventDto = EventMapper.toFullEventDto(event);
         long confirmedRequestsCount = requestRepository.countAllByEventIdAndStatusIs(event.getId(),
@@ -431,6 +439,12 @@ public class EventServiceImpl implements EventService {
         return fullEventDto;
     }
 
+    /**
+     * Получает DTO для краткого события на основе объекта Event.
+     *
+     * @param event Объект Event.
+     * @return EventShortDto, содержащий краткую информацию о событии.
+     */
     private EventShortDto getShortEventDto(Event event) {
         EventShortDto eventShortDto = EventMapper.toEventShortDto(event);
         long confirmedRequestsCount = requestRepository.countAllByEventIdAndStatusIs(event.getId(),
@@ -443,6 +457,11 @@ public class EventServiceImpl implements EventService {
         return eventShortDto;
     }
 
+    /**
+     * Добавляет статистику для запроса.
+     *
+     * @param request HTTP-запрос.
+     */
     private void addStatistics(HttpServletRequest request) {
         LocalDateTime now = LocalDateTime.now();
         ResponseEntity<Object> responseEntity = statisticClient.addStatistic(EndpointHitDto.builder()
@@ -456,6 +475,12 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    /**
+     * Проверяет событие на наличие обновлений в запросе и обновляет его соответствующими данными.
+     *
+     * @param request Запрос на обновление события.
+     * @param event   Объект Event для обновления.
+     */
     private void checkEventForUpdate(UpdateEventUserRequest request, Event event) {
         if (request.getAnnotation() != null) {
             event.setAnnotation(request.getAnnotation());
@@ -484,6 +509,12 @@ public class EventServiceImpl implements EventService {
         }
     }
 
+    /**
+     * Получает количество просмотров для события.
+     *
+     * @param eventId Идентификатор события.
+     * @return Количество просмотров события.
+     */
     private long getHitCount(long eventId) {
         try {
             Thread.sleep(300);
@@ -511,6 +542,13 @@ public class EventServiceImpl implements EventService {
         return hitCount;
     }
 
+    /**
+     * Получает Optional<Category> для заданного идентификатора категории.
+     *
+     * @param categoryId Идентификатор категории.
+     * @return Optional<Category>, содержащий категорию, если найдена.
+     * @throws NotFoundException Если категория с заданным идентификатором не найдена.
+     */
     private Optional<Category> getOptionalCategory(long categoryId) {
         Optional<Category> categoryOptional = categoryRepository.findById(categoryId);
         if (categoryOptional.isEmpty()) {
@@ -519,6 +557,13 @@ public class EventServiceImpl implements EventService {
         return categoryOptional;
     }
 
+    /**
+     * Получает Optional<User> для заданного идентификатора пользователя.
+     *
+     * @param userId Идентификатор пользователя.
+     * @return Optional<User>, содержащий пользователя, если найден.
+     * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
+     */
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -527,6 +572,13 @@ public class EventServiceImpl implements EventService {
         return userOptional;
     }
 
+    /**
+     * Получает Optional<Event> для заданного идентификатора события.
+     *
+     * @param eventId Идентификатор события.
+     * @return Optional<Event>, содержащий событие, если найдено.
+     * @throws NotFoundException Если событие с заданным идентификатором не найдено.
+     */
     private Optional<Event> getOptionalEvent(long eventId) {
         Optional<Event> eventOptional = eventRepository.findById(eventId);
         if (eventOptional.isEmpty()) {

@@ -139,6 +139,23 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.save(comment);
     }
 
+    @Override
+    public void removeLikeFromComment(Long userId, Long commentId) {
+        User user = getOptionalUser(userId).get();
+        Comment comment = getOptionalComment(commentId).get();
+        if (comment.getLikes().contains(user)) {
+            comment.getLikes().remove(user);
+            commentRepository.save(comment);
+        }
+    }
+
+    /**
+     * Получает Optional<User> для заданного идентификатора пользователя.
+     *
+     * @param userId Идентификатор пользователя.
+     * @return Optional<User>, содержащий пользователя, если найден.
+     * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
+     */
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -147,14 +164,28 @@ public class CommentServiceImpl implements CommentService {
         return userOptional;
     }
 
+    /**
+     * Получает Optional<Event> для заданного идентификатора события, только если оно опубликовано.
+     *
+     * @param eventId Идентификатор события.
+     * @return Optional<Event>, содержащий событие, если оно опубликовано.
+     * @throws NotFoundException Если событие с заданным идентификатором не найдено или не опубликовано.
+     */
     private Optional<Event> getOptionalEventIfPublished(long eventId) {
         Optional<Event> eventOptional = eventRepository.findByIdAndState(eventId, EventState.PUBLISHED);
         if (eventOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Событие с ID=%d не найдено", eventId));
+            throw new NotFoundException(String.format("Событие с ID=%d не найдено или не опубликовано", eventId));
         }
         return eventOptional;
     }
 
+    /**
+     * Получает Optional<Comment> для заданного идентификатора комментария.
+     *
+     * @param commentId Идентификатор комментария.
+     * @return Optional<Comment>, содержащий комментарий, если найден.
+     * @throws NotFoundException Если комментарий с заданным идентификатором не найден.
+     */
     private Optional<Comment> getOptionalComment(long commentId) {
         Optional<Comment> commentOptional = commentRepository.findById(commentId);
         if (commentOptional.isEmpty()) {
@@ -162,4 +193,5 @@ public class CommentServiceImpl implements CommentService {
         }
         return commentOptional;
     }
+
 }

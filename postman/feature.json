@@ -482,7 +482,7 @@
 					"response": []
 				},
 				{
-					"name": "Добавление нового комментария длиной меньше 10 Copy",
+					"name": "Добавление нового комментария длиной меньше 10",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -2287,6 +2287,316 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Лайк комментария когда пользователя не существует",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id + 2)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id)\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 404 и данные в формате json', function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{uid}}/comments/{{cid}}/like",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{uid}}",
+								"comments",
+								"{{cid}}",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Лайк комментария когда комментария не существует",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id + 1)\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 404 и данные в формате json', function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{uid}}/comments/{{cid}}/like",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{uid}}",
+								"comments",
+								"{{cid}}",
+								"like"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Убрать лайк с комментария когда пользователя не существует",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id + 2)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id)\r",
+									"        await api.addLikeToComment(user.id, comment1.id);\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 404 и данные в формате json', function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{uid}}/comments/{{cid}}/unlike",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{uid}}",
+								"comments",
+								"{{cid}}",
+								"unlike"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Убрать лайк с комментария когда комментария не существует",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id + 1)\r",
+									"        await api.addLikeToComment(user.id, comment1.id);\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 404 и данные в формате json', function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{uid}}/comments/{{cid}}/unlike",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{uid}}",
+								"comments",
+								"{{cid}}",
+								"unlike"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -3732,6 +4042,82 @@
 					"response": []
 				},
 				{
+					"name": "Убрать лайк с комментария",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id)\r",
+									"        await api.addLikeToComment(user.id, comment1.id);\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 200', function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/users/{{uid}}/comments/{{cid}}/unlike",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"{{uid}}",
+								"comments",
+								"{{cid}}",
+								"unlike"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Лайк комментария",
 					"event": [
 						{
@@ -3850,7 +4236,126 @@
 					"response": []
 				},
 				{
-					"name": "Лайк на комментарий",
+					"name": "Убрать лайк с комментария",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const main = async () => {\r",
+									"    const api = new API(pm);\r",
+									"    const rnd = new RandomUtils();\r",
+									"\r",
+									"    try {\r",
+									"        const user = await api.addUser(rnd.getUser());\r",
+									"        const category = await api.addCategory(rnd.getCategory());\r",
+									"        const event = await api.addEvent(user.id, rnd.getEvent(category.id));\r",
+									"        pm.collectionVariables.set(\"eid\", event.id)\r",
+									"        await api.publishEvent(event.id);\r",
+									"        const user2 = await api.addUser(rnd.getUser());\r",
+									"        pm.collectionVariables.set(\"uid\", user.id)\r",
+									"        const comment1 = await api.addComment(user2.id, rnd.getComment(null), event.id);\r",
+									"        await api.addLikeToComment(user.id, comment1.id);\r",
+									"        pm.collectionVariables.set(\"cid\", comment1.id)\r",
+									"        await api.removeLikeFromComment(user.id, comment1.id);\r",
+									"    } catch(err) {\r",
+									"        console.error(\"Ошибка при подготовке тестовых данных.\", err);\r",
+									"    }\r",
+									"};\r",
+									"\r",
+									"const interval = setInterval(() => {}, 1000);\r",
+									"\r",
+									"setTimeout(async () => \r",
+									"    {\r",
+									"        try {\r",
+									"            await main();\r",
+									"        } catch (e) {\r",
+									"            console.error(e);\r",
+									"        } finally {\r",
+									"            clearInterval(interval);\r",
+									"        }\r",
+									"    },  \r",
+									"    100 \r",
+									");"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Ответ должен содержать код статуса 200 и данные в формате json', function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"    pm.response.to.be.withBody;\r",
+									"    pm.response.to.be.json;\r",
+									"})\r",
+									"\r",
+									"const source = pm.request.body.raw ? JSON.parse(pm.request.body.raw) : {};\r",
+									"\r",
+									"const target = pm.response.json();\r",
+									"\r",
+									"pm.test('Событие должно содержать поля: id, category, annotation, initiator, confirmedRequests,'+\r",
+									"'description, eventDate, publishedOn, createdOn, location, paid, participantLimit, requestModeration, title, state, views, comments', function () {\r",
+									"    pm.expect(target).to.have.property('id');\r",
+									"    pm.expect(target).to.have.property('category');\r",
+									"    pm.expect(target).to.have.property('annotation');\r",
+									"    pm.expect(target).to.have.property('initiator');\r",
+									"    pm.expect(target).to.have.property('confirmedRequests');\r",
+									"    pm.expect(target).to.have.property('description');\r",
+									"    pm.expect(target).to.have.property('eventDate');\r",
+									"    pm.expect(target).to.have.property('publishedOn');\r",
+									"    pm.expect(target).to.have.property('createdOn');\r",
+									"    pm.expect(target).to.have.property('location');\r",
+									"    pm.expect(target).to.have.property('paid');\r",
+									"    pm.expect(target).to.have.property('participantLimit');\r",
+									"    pm.expect(target).to.have.property('requestModeration');\r",
+									"    pm.expect(target).to.have.property('title');\r",
+									"    pm.expect(target).to.have.property('state');\r",
+									"    pm.expect(target).to.have.property('views');\r",
+									"    pm.expect(target).to.have.property('comments');\r",
+									"})\r",
+									"\r",
+									"pm.test(\"Данные в событии должны соответствовать\", function () {\r",
+									"    pm.expect(target.id).to.not.be.null;\r",
+									"    pm.expect(target.comments).to.be.length(1)\r",
+									"    pm.expect(target.comments[0].likeCount).to.be.equal(0);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{{request_body}}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/events/{{eid}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"events",
+								"{{eid}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Лайк на ответ к комментария",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -3995,6 +4500,10 @@
 					"",
 					"    async addLikeToComment(userId, commentId, verbose = null) {",
 					"        return this.post(\"/users/\" + userId + \"/comments/\" + commentId + \"/like\", null, \"Ошибка при лайке комментария: \", verbose);",
+					"    }",
+					"",
+					"    async removeLikeFromComment(userId, commentId, verbose = null) {",
+					"        return this.post(\"/users/\" + userId + \"/comments/\" + commentId + \"/unlike\", null, \"Ошибка при анлайке комментария: \", verbose);",
 					"    }",
 					"",
 					"    async addCategory(category, verbose = null) {",
