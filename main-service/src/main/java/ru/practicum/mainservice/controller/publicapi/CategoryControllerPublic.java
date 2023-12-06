@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 /**
  * Контроллер для обработки запросов по категориям.
  */
-@RestController()
+@RestController
 @RequestMapping(path = "/categories")
 @RequiredArgsConstructor
 public class CategoryControllerPublic {

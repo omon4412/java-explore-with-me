@@ -89,6 +89,14 @@ public class CompilationServiceImpl implements CompilationService {
         return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }
 
+    /**
+     * Получает DTO для подборки на основе объекта Compilation и множества связанных событий.
+     *
+     * @param compilation Объект Compilation.
+     * @param events      Множество связанных событий.
+     * @return CompilationDto, содержащий информацию о подборке и её событиях.
+     * @throws NotFoundException Если подборка с заданным идентификатором не найдена.
+     */
     private CompilationDto getCompilationDto(Compilation compilation, HashSet<Event> events) {
         compilation.setEventsInCompilation(events);
         List<String> uris = events.stream()
@@ -131,6 +139,13 @@ public class CompilationServiceImpl implements CompilationService {
         return compilationDto;
     }
 
+    /**
+     * Получает Optional<Compilation> для заданного идентификатора подборки.
+     *
+     * @param compId Идентификатор подборки.
+     * @return Optional<Compilation>, содержащий подборку, если найдена.
+     * @throws NotFoundException Если подборка с заданным идентификатором не найдена.
+     */
     private Optional<Compilation> getOptionalCompilation(long compId) {
         Optional<Compilation> compilationOptional = compilationRepository.findById(compId);
         if (compilationOptional.isEmpty()) {

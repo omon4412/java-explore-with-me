@@ -80,6 +80,13 @@ public class RequestServiceImpl implements RequestService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Получает Optional<User> для заданного идентификатора пользователя.
+     *
+     * @param userId Идентификатор пользователя.
+     * @return Optional<User>, содержащий пользователя, если найден.
+     * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
+     */
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {
@@ -88,6 +95,13 @@ public class RequestServiceImpl implements RequestService {
         return userOptional;
     }
 
+    /**
+     * Получает Optional<Event> для заданного идентификатора события.
+     *
+     * @param eventId Идентификатор события.
+     * @return Optional<Event>, содержащий событие, если найдено.
+     * @throws NotFoundException Если событие с заданным идентификатором не найдено.
+     */
     private Optional<Event> getOptionalEvent(long eventId) {
         Optional<Event> eventOptional = eventRepository.findById(eventId);
         if (eventOptional.isEmpty()) {
@@ -96,6 +110,13 @@ public class RequestServiceImpl implements RequestService {
         return eventOptional;
     }
 
+    /**
+     * Получает Optional<Request> для заданного идентификатора запроса.
+     *
+     * @param requestId Идентификатор запроса.
+     * @return Optional<Request>, содержащий запрос, если найден.
+     * @throws NotFoundException Если запрос с заданным идентификатором не найден.
+     */
     private Optional<Request> getOptionalRequest(long requestId) {
         Optional<Request> requestOptional = requestRepository.findById(requestId);
         if (requestOptional.isEmpty()) {

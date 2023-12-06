@@ -1,10 +1,12 @@
 package ru.practicum.mainservice.controller.publicapi;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.FullEventDto;
 import ru.practicum.mainservice.model.SortTypes;
@@ -21,6 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/events")
 @RequiredArgsConstructor
+@Slf4j
 public class EventControllerPublic {
 
     /**
@@ -33,7 +36,7 @@ public class EventControllerPublic {
      *
      * @param eventId Идентификатор события.
      * @param request HTTP-запрос для получения информации о клиенте.
-     * @return ResponseEntity, содержащий полную информацию о событии для публичного доступа.
+     * @return ResponseEntity, содержащий полную информацию о событии.
      */
     @GetMapping("/{eventId}")
     public ResponseEntity<FullEventDto> getEventPublic(@PathVariable long eventId, HttpServletRequest request) {
@@ -53,28 +56,29 @@ public class EventControllerPublic {
      * @param from          Индекс начального элемента для пагинации.
      * @param size          Размер страницы для пагинации.
      * @param request       HTTP-запрос для получения информации о клиенте.
-     * @return ResponseEntity, содержащий коллекцию общедоступных событий.
+     * @return ResponseEntity, содержащий коллекцию событий.
      */
     @GetMapping
-    public ResponseEntity<Collection<EventShortDto>> searchEventsPublic(
-            @RequestParam(required = false) String text,
-            @RequestParam(required = false) List<Long> categories,
-            @RequestParam(required = false) Boolean paid,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-            @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
-            @RequestParam(required = false, defaultValue = "EVENT_DATE") String sort,
-            @RequestParam(defaultValue = "0") int from,
-            @RequestParam(defaultValue = "10") int size,
-            HttpServletRequest request) {
+    public ResponseEntity<Collection<EventShortDto>> searchEventsPublic(@RequestParam(required = false) String text, @RequestParam(required = false) List<Long> categories, @RequestParam(required = false) Boolean paid, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart, @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd, @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable, @RequestParam(required = false, defaultValue = "EVENT_DATE") String sort, @RequestParam(defaultValue = "0") int from, @RequestParam(defaultValue = "10") int size, HttpServletRequest request) {
 
         SortTypes sortType = SortTypes.EVENT_DATE;
         if (SortTypes.contains(sort)) {
             sortType = SortTypes.valueOf(sort);
         }
-        Collection<EventShortDto> events = eventService.searchEventsPublic(text, categories, paid, rangeStart,
-                rangeEnd, onlyAvailable, sortType, from, size, request);
+        Collection<EventShortDto> events = eventService.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sortType, from, size, request);
 
         return new ResponseEntity<>(events, HttpStatus.OK);
+    }
+
+    /**
+     * Поиск всех комментариев или по ключевым словам.
+     *
+     * @param eventId Идентификатор события.
+     * @param keyWord Ключевое слово.
+     * @return ResponseEntity, содержащий коллекцию комментариев к событию.
+     */
+    @GetMapping("/{eventId}/comments")
+    public ResponseEntity<Collection<CommentDto>> getEventComments(@PathVariable long eventId, @RequestParam(required = false) String keyWord) {
+        return new ResponseEntity<>(eventService.getEventComments(eventId, keyWord), HttpStatus.OK);
     }
 }

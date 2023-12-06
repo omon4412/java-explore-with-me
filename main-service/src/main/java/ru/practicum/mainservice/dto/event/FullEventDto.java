@@ -6,11 +6,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.mainservice.dto.category.CategoryDto;
+import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.user.UserShortDto;
 import ru.practicum.mainservice.model.EventState;
 import ru.practicum.mainservice.model.Location;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
 
 /**
  * DTO для представления полной информации о событии.
@@ -102,4 +104,9 @@ public class FullEventDto {
      * Количество просмотров события.
      */
     protected Long views;
+
+    /**
+     * Список комментариев.
+     */
+    protected Collection<CommentDto> comments;
 }

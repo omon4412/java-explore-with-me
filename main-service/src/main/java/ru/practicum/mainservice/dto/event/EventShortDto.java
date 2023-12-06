@@ -63,4 +63,9 @@ public class EventShortDto {
      * Количество просмотров события.
      */
     protected Long views;
+
+    /**
+     * Количество комментариев на событии.
+     */
+    protected Long commentsCount;
 }
