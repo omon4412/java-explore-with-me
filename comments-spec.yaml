@@ -1,0 +1,520 @@
+openapi: "3.0.3"
+info:
+  title: "Comments API"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+tags:
+  - name: "CommentController"
+    description: "API для работы с комментариями"
+paths:
+  /users/{userId}/comments:
+    post:
+      summary: "Добавление нового комментария к событию"
+      description: "Писать комментарий может только НЕ автор события. Автор может только отвечать на другие комментарии своего события"
+      operationId: "addCommentToEvent"
+      parameters:
+        - name: "userId"
+          description: "Идентификатор пользователя, который оставляет комментарий"
+          in: "path"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "eventId"
+          in: "query"
+          description: "Идентификатор события, к которому оставляют комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewCommentDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentDto"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Пользователь с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Пользователь не найден или недоступен"
+  /users/{userId}/comments/{commentId}:
+    patch:
+      summary: "Редактирование своего комментария."
+      description: "Редактировать комментарий можно только в течении 2-ух часов после публикации"
+      operationId: "updateCommentToEvent"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя, который редактирует комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария, которое редактируют"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCommentDto"
+        required: true
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/CommentDto"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Комментарий с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Комментарий не найден или недоступен"
+    delete:
+      summary: "Удаление своего комментария"
+      description: "Удалить комментарий можно только в течении 2-ух часов после публикации"
+      operationId: "deleteCommentToEvent"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя, который удаляет комментарий"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария, который удаляют"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Комментарий с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Комментарий не найден или недоступен"
+  /events/{eventId}/comments:
+    get:
+      summary: "Поиск всех комментариев или по ключевым словам"
+      operationId: "getEventComments"
+      parameters:
+        - name: "eventId"
+          in: "path"
+          description: "Идентификатор события"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "keyWord"
+          in: "query"
+          description: "Ключевое слово"
+          required: false
+          schema:
+            type: "string"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/CommentDto"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Событие с ID=3 не найдено"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Событие не найдено или недоступно"
+  /admin/comments:
+    get:
+      summary: "Запрос на получение всех комментариев пользователя администратором"
+      operationId: "getAllUserComments"
+      parameters:
+        - name: "userId"
+          in: "query"
+          description: "Идентификатор пользователя"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "text"
+          in: "query"
+          description: "Ключевое слово"
+          required: false
+          schema:
+            type: "string"
+        - name: "events"
+          in: "query"
+          description: "Список идентификаторов событий, в которых искать комментарии"
+          required: false
+          schema:
+            type: "array"
+            items:
+              type: "integer"
+              format: "int64"
+        - name: "rangeStart"
+          in: "query"
+          description: "Начало временного интервала для фильтрации комментариев"
+          required: false
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "rangeEnd"
+          in: "query"
+          description: "Конец временного интервала для фильтрации комментариев"
+          required: false
+          schema:
+            type: "string"
+            format: "date-time"
+        - name: "from"
+          in: "query"
+          description: "Индекс начального элемента для пагинации"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "0"
+        - name: "size"
+          in: "query"
+          description: "Размер страницы для пагинации"
+          required: false
+          schema:
+            type: "integer"
+            format: "int32"
+            default: "10"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/CommentDto"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Пользователь с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Пользователь не найден или недоступен"
+  /admin/comments/{commentId}:
+    delete:
+      summary: "Запрос на удаление комментария администратором"
+      operationId: "deleteCommentToEventAdmin"
+      parameters:
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Void"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Комментарий с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Комментарий не найден или недоступен"
+  /users/{userId}/comments/{commentId}/like:
+    post:
+      summary: "Поставить лайк комментарию"
+      description: "На свой комментарий ставить лайк нельзя"
+      operationId: "likeComment"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя который ставит лайк"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          description: "Идентификатор комментария на который ставят лайк"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Комментарий с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Комментарий не найден или недоступен"
+  /users/{userId}/comments/{commentId}/unlike:
+    post:
+      summary: "Убрать лайк у комментария"
+      operationId: "unlikeComment"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "Идентификатор пользователя который ставит убирает лайк"
+          required: true
+          schema:
+            type: "integer"
+            format: "int64"
+        - name: "commentId"
+          in: "path"
+          required: true
+          description: "Идентификатор комментария у которого убирают лайк"
+          schema:
+            type: "integer"
+            format: "int64"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            '*/*':
+              schema:
+                type: "string"
+        "404":
+          "content":
+            "application/json":
+              "example":
+                "status": "NOT_FOUND"
+                "reason": "Запрашиваемый объект не найден"
+                "message": "Комментарий с ID=3 не найден"
+                "timestamp": "2023-06-12 09:10:50"
+              "schema":
+                "$ref": "#/components/schemas/ApiError"
+          "description": "Комментарий не найден или недоступен"
+components:
+  schemas:
+    "ApiError":
+      "type": "object"
+      "properties":
+        "errors":
+          "type": "array"
+          "description": "Список стектрейсов или описания ошибок"
+          "example": [ ]
+          "items":
+            "type": "string"
+            "description": "Список стектрейсов или описания ошибок"
+            "example": "[]"
+        "message":
+          "type": "string"
+          "description": "Сообщение об ошибке"
+          "example": "Only pending or canceled events can be changed"
+        "reason":
+          "type": "string"
+          "description": "Общее описание причины ошибки"
+          "example": "For the requested operation the conditions are not met."
+        "status":
+          "type": "string"
+          "description": "Код статуса HTTP-ответа"
+          "example": "FORBIDDEN"
+          "enum":
+            - "100 CONTINUE"
+            - "101 SWITCHING_PROTOCOLS"
+            - "102 PROCESSING"
+            - "103 CHECKPOINT"
+            - "200 OK"
+            - "201 CREATED"
+            - "202 ACCEPTED"
+            - "203 NON_AUTHORITATIVE_INFORMATION"
+            - "204 NO_CONTENT"
+            - "205 RESET_CONTENT"
+            - "206 PARTIAL_CONTENT"
+            - "207 MULTI_STATUS"
+            - "208 ALREADY_REPORTED"
+            - "226 IM_USED"
+            - "300 MULTIPLE_CHOICES"
+            - "301 MOVED_PERMANENTLY"
+            - "302 FOUND"
+            - "302 MOVED_TEMPORARILY"
+            - "303 SEE_OTHER"
+            - "304 NOT_MODIFIED"
+            - "305 USE_PROXY"
+            - "307 TEMPORARY_REDIRECT"
+            - "308 PERMANENT_REDIRECT"
+            - "400 BAD_REQUEST"
+            - "401 UNAUTHORIZED"
+            - "402 PAYMENT_REQUIRED"
+            - "403 FORBIDDEN"
+            - "404 NOT_FOUND"
+            - "405 METHOD_NOT_ALLOWED"
+            - "406 NOT_ACCEPTABLE"
+            - "407 PROXY_AUTHENTICATION_REQUIRED"
+            - "408 REQUEST_TIMEOUT"
+            - "409 CONFLICT"
+            - "410 GONE"
+            - "411 LENGTH_REQUIRED"
+            - "412 PRECONDITION_FAILED"
+            - "413 PAYLOAD_TOO_LARGE"
+            - "413 REQUEST_ENTITY_TOO_LARGE"
+            - "414 URI_TOO_LONG"
+            - "414 REQUEST_URI_TOO_LONG"
+            - "415 UNSUPPORTED_MEDIA_TYPE"
+            - "416 REQUESTED_RANGE_NOT_SATISFIABLE"
+            - "417 EXPECTATION_FAILED"
+            - "418 I_AM_A_TEAPOT"
+            - "419 INSUFFICIENT_SPACE_ON_RESOURCE"
+            - "420 METHOD_FAILURE"
+            - "421 DESTINATION_LOCKED"
+            - "422 UNPROCESSABLE_ENTITY"
+            - "423 LOCKED"
+            - "424 FAILED_DEPENDENCY"
+            - "425 TOO_EARLY"
+            - "426 UPGRADE_REQUIRED"
+            - "428 PRECONDITION_REQUIRED"
+            - "429 TOO_MANY_REQUESTS"
+            - "431 REQUEST_HEADER_FIELDS_TOO_LARGE"
+            - "451 UNAVAILABLE_FOR_LEGAL_REASONS"
+            - "500 INTERNAL_SERVER_ERROR"
+            - "501 NOT_IMPLEMENTED"
+            - "502 BAD_GATEWAY"
+            - "503 SERVICE_UNAVAILABLE"
+            - "504 GATEWAY_TIMEOUT"
+            - "505 HTTP_VERSION_NOT_SUPPORTED"
+            - "506 VARIANT_ALSO_NEGOTIATES"
+            - "507 INSUFFICIENT_STORAGE"
+            - "508 LOOP_DETECTED"
+            - "509 BANDWIDTH_LIMIT_EXCEEDED"
+            - "510 NOT_EXTENDED"
+            - "511 NETWORK_AUTHENTICATION_REQUIRED"
+        "timestamp":
+          "type": "string"
+          "description": "Дата и время когда произошла ошибка (в формате \"yyyy-MM-dd HH:mm:ss\")"
+          "example": "2022-06-09 06:27:23"
+    NewCommentDto:
+      description: "DTO для создания нового комментария"
+      type: "object"
+      properties:
+        text:
+          type: "string"
+          description: "Текст комментария"
+          minLength: 10
+          maxLength: 1000
+        parentCommentId:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор сообщения, на которое отвечают"
+    UserShortDto:
+      type: "object"
+      description: "Пользователь (краткая информация)"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор"
+        name:
+          type: "string"
+          description: "Имя"
+    CommentDto:
+      type: "object"
+      description: "DTO для представления комментария"
+      properties:
+        id:
+          type: "integer"
+          format: "int64"
+          description: "Идентификатор"
+        author:
+          $ref: "#/components/schemas/UserShortDto"
+        isEventAuthor:
+          type: "boolean"
+          description: "Флаг, указывает автор отвечает на комментарий или нет"
+        text:
+          type: "string"
+          description: "Текст комментария"
+        childComments:
+          type: "array"
+          description: "Ответы на комментарии"
+          items:
+            $ref: "#/components/schemas/CommentDto"
+        commentDate:
+          type: "string"
+          format: "date-time"
+          description: "Дата публикации комментария"
+        updateDate:
+          type: "string"
+          format: "date-time"
+          description: "Последняя дата обновления комментария"
+        likeCount:
+          type: "integer"
+          format: "int64"
+          description: "Количество лайков пользователя"
+    UpdateCommentDto:
+      type: "object"
+      description: "DTO для обновления комментария"
+      properties:
+        text:
+          type: "string"
+          description: "Новый текст комментария"
+    Void:
+      type: "object"
+      properties: { }

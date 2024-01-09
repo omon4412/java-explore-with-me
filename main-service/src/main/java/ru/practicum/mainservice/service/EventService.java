@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.service;
 
+import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.FullEventDto;
 import ru.practicum.mainservice.dto.event.NewEventDto;
@@ -131,4 +132,6 @@ public interface EventService {
                                                  LocalDateTime rangeStart, LocalDateTime rangeEnd,
                                                  Boolean onlyAvailable, SortTypes sort, int from, int size,
                                                  HttpServletRequest request);
+
+    Collection<CommentDto> getEventComments(long eventId, String keyWord);
 }

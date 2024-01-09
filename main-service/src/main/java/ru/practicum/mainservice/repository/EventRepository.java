@@ -9,12 +9,15 @@ import ru.practicum.mainservice.model.EventState;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Jpa репозиторий событий.
  */
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findAllByInitiatorId(long initiatorId, Pageable pageable);
+
+    Optional<Event> findByIdAndState(long id, EventState state);
 
     @Query("SELECT e FROM Event e WHERE " +
             "((:users) IS NULL OR e.initiator.id IN (:users)) " +
