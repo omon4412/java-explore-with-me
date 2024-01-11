@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.dto.user;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,7 +11,8 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 @Builder
-public class UserDto {
+@AllArgsConstructor
+public class UserDto implements UserInfo {
     /**
      * Идентификатор пользователя.
      */

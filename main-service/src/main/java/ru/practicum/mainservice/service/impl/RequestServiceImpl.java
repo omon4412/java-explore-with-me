@@ -1,6 +1,7 @@
 package ru.practicum.mainservice.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ru.practicum.mainservice.dto.request.ParticipationRequestDto;
 import ru.practicum.mainservice.exception.ConflictException;
@@ -9,8 +10,8 @@ import ru.practicum.mainservice.mapper.RequestMapper;
 import ru.practicum.mainservice.model.*;
 import ru.practicum.mainservice.repository.EventRepository;
 import ru.practicum.mainservice.repository.RequestRepository;
-import ru.practicum.mainservice.repository.UserRepository;
 import ru.practicum.mainservice.service.RequestService;
+import ru.practicum.mainservice.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -21,19 +22,19 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RequestServiceImpl implements RequestService {
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final RequestRepository requestRepository;
 
     @Override
-    public ParticipationRequestDto addRequest(long userId, long eventId) {
-        User user = getOptionalUser(userId).get();
+    public ParticipationRequestDto addRequest(Authentication authentication, long eventId) {
+        User user = getOptionalUser(authentication).get();
         Event event = getOptionalEvent(eventId).get();
         LocalDateTime now = LocalDateTime.now();
-        Optional<Request> requestOptional = requestRepository.findByRequesterIdAndEventId(userId, eventId);
+        Optional<Request> requestOptional = requestRepository.findByRequesterIdAndEventId(user.getId(), eventId);
         if (requestOptional.isPresent()) {
             throw new ConflictException("Нельзя добавить повторный запрос");
         }
-        if (event.getInitiator().getId() == userId) {
+        if (event.getInitiator().getId().equals(user.getId())) {
             throw new ConflictException("Инициатор события не может добавить запрос на участие в своём событии");
         }
         if (!event.getState().equals(EventState.PUBLISHED)) {
@@ -64,8 +65,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public ParticipationRequestDto cancelRequest(long userId, long requestId) {
-        getOptionalUser(userId).get();
+    public ParticipationRequestDto cancelRequest(Authentication authentication, long requestId) {
+        getOptionalUser(authentication).get();
         Request request = getOptionalRequest(requestId).get();
         request.setStatus(RequestStatus.CANCELED);
         Request result = requestRepository.save(request);
@@ -73,8 +74,9 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public Collection<ParticipationRequestDto> getAllByUserRequests(long userId) {
-        Collection<Request> result = requestRepository.findAllByRequesterId(userId);
+    public Collection<ParticipationRequestDto> getAllByUserRequests(Authentication authentication) {
+        User user = getOptionalUser(authentication).get();
+        Collection<Request> result = requestRepository.findAllByRequesterId(user.getId());
         return result.stream()
                 .map(RequestMapper::toParticipationRequestDto)
                 .collect(Collectors.toList());
@@ -83,14 +85,14 @@ public class RequestServiceImpl implements RequestService {
     /**
      * Получает Optional<User> для заданного идентификатора пользователя.
      *
-     * @param userId Идентификатор пользователя.
+     * @param authentication Идентификатор пользователя.
      * @return Optional<User>, содержащий пользователя, если найден.
      * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
      */
-    private Optional<User> getOptionalUser(long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
+    private Optional<User> getOptionalUser(Authentication authentication) {
+        Optional<User> userOptional = userService.findByUsername(authentication.getName());
         if (userOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Пользователь с ID=%d не найден", userId));
+            throw new NotFoundException(String.format("Пользователь с ID=%s не найден", authentication.getName()));
         }
         return userOptional;
     }

@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.service;
 
+import org.springframework.security.core.Authentication;
 import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.event.EventShortDto;
 import ru.practicum.mainservice.dto.event.FullEventDto;
@@ -28,7 +29,7 @@ public interface EventService {
      * @param userId   Идентификатор пользователя-инициатора.
      * @return Полная информация о добавленном событии.
      */
-    FullEventDto addEvent(NewEventDto eventDto, long userId);
+    FullEventDto addEvent(NewEventDto eventDto, Authentication userId);
 
     /**
      * Получает все события пользователя.
@@ -38,7 +39,7 @@ public interface EventService {
      * @param size   Размер страницы для пагинации.
      * @return Коллекция краткой информации о событиях пользователя.
      */
-    Collection<EventShortDto> getUsersAllEvent(long userId, Integer from, Integer size);
+    Collection<EventShortDto> getUsersAllEvent(Authentication userId, Integer from, Integer size);
 
     /**
      * Получает полную информацию о событии пользователя по его идентификатору.
@@ -47,7 +48,7 @@ public interface EventService {
      * @param eventId Идентификатор события.
      * @return Полная информация о событии пользователя.
      */
-    FullEventDto getUserEventById(long userId, long eventId);
+    FullEventDto getUserEventById(Authentication userId, long eventId);
 
     /**
      * Обновляет информацию о событии пользователя.
@@ -57,7 +58,7 @@ public interface EventService {
      * @param request Запрос на обновление информации о событии.
      * @return Полная информация об обновленном событии пользователя.
      */
-    FullEventDto updateUsersEventById(long userId, long eventId, UpdateEventUserRequest request);
+    FullEventDto updateUsersEventById(Authentication userId, long eventId, UpdateEventUserRequest request);
 
     /**
      * Получает запросы на участие в событии пользователя.
@@ -66,7 +67,7 @@ public interface EventService {
      * @param eventId Идентификатор события.
      * @return Коллекция запросов на участие в событии пользователя.
      */
-    Collection<ParticipationRequestDto> getUsersEventRequests(long userId, long eventId);
+    Collection<ParticipationRequestDto> getUsersEventRequests(Authentication userId, long eventId);
 
     /**
      * Изменяет статус запросов на участие в событии.
@@ -76,7 +77,7 @@ public interface EventService {
      * @param request Запрос на изменение статуса запросов.
      * @return Результат изменения статуса запросов на участие.
      */
-    EventRequestStatusUpdateResult changeRequestsStatus(long userId, long eventId,
+    EventRequestStatusUpdateResult changeRequestsStatus(Authentication userId, long eventId,
                                                         EventRequestStatusUpdateRequest request);
 
     /**

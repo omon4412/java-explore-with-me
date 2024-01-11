@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.service;
 
+import org.springframework.security.core.Authentication;
 import ru.practicum.mainservice.dto.request.ParticipationRequestDto;
 
 import java.util.Collection;
@@ -16,7 +17,7 @@ public interface RequestService {
      * @param eventId Идентификатор события, для которого отправлен запрос.
      * @return Информация о добавленном запросе на участие.
      */
-    ParticipationRequestDto addRequest(long userId, long eventId);
+    ParticipationRequestDto addRequest(Authentication userId, long eventId);
 
     /**
      * Отменяет запрос на участие в событии.
@@ -25,7 +26,7 @@ public interface RequestService {
      * @param requestId Идентификатор запроса на участие, который нужно отменить.
      * @return Информация об отмененном запросе на участие.
      */
-    ParticipationRequestDto cancelRequest(long userId, long requestId);
+    ParticipationRequestDto cancelRequest(Authentication userId, long requestId);
 
     /**
      * Получает все запросы на участие пользователя.
@@ -33,5 +34,5 @@ public interface RequestService {
      * @param userId Идентификатор пользователя.
      * @return Коллекция информации о запросах на участие пользователя.
      */
-    Collection<ParticipationRequestDto> getAllByUserRequests(long userId);
+    Collection<ParticipationRequestDto> getAllByUserRequests(Authentication userId);
 }

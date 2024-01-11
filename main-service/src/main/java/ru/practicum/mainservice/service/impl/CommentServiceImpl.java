@@ -3,6 +3,7 @@ package ru.practicum.mainservice.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.comment.NewCommentDto;
@@ -19,6 +20,7 @@ import ru.practicum.mainservice.repository.CommentRepository;
 import ru.practicum.mainservice.repository.EventRepository;
 import ru.practicum.mainservice.repository.UserRepository;
 import ru.practicum.mainservice.service.CommentService;
+import ru.practicum.mainservice.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -31,19 +33,20 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
     private final CommentRepository commentRepository;
+    private final UserService userService;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
 
     @Override
-    public CommentDto addComment(Long userId, Long eventId, NewCommentDto commentDto) {
-        User user = getOptionalUser(userId).get();
+    public CommentDto addComment(Authentication authentication, Long eventId, NewCommentDto commentDto) {
+        User user = getOptionalUserByAuth(authentication).get();
         Event event = getOptionalEventIfPublished(eventId).get();
         Comment comment = CommentMapper.toComment(commentDto);
         if (commentDto.getParentCommentId() != null) {
             Comment parentComment = getOptionalComment(commentDto.getParentCommentId()).get();
             comment.setParentComment(parentComment);
         } else {
-            if (userId.equals(event.getInitiator().getId())) {
+            if (user.getId().equals(event.getInitiator().getId())) {
                 throw new ConflictException("Нельзя оставлять комментарий под своим событием, можно только отвечать");
             }
         }
@@ -53,17 +56,17 @@ public class CommentServiceImpl implements CommentService {
         comment.setCommentDate(LocalDateTime.now());
         Comment result = commentRepository.save(comment);
         CommentDto resultCommentDto = CommentMapper.toCommentDto(result);
-        resultCommentDto.setIsEventAuthor(userId.equals(event.getInitiator().getId()));
+        resultCommentDto.setIsEventAuthor(user.getId().equals(event.getInitiator().getId()));
         resultCommentDto.setLikeCount(0L);
         return resultCommentDto;
     }
 
     @Override
-    public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto commentDto) {
-        getOptionalUser(userId).get();
+    public CommentDto updateComment(Authentication authentication, Long commentId, UpdateCommentDto commentDto) {
+        User user = getOptionalUserByAuth(authentication).get();
         Comment comment = getOptionalComment(commentId).get();
         getOptionalEventIfPublished(comment.getEvent().getId());
-        if (!userId.equals(comment.getAuthor().getId())) {
+        if (!user.getId().equals(comment.getAuthor().getId())) {
             throw new ConflictException("Нельзя редактировать чужой комментарий");
         }
         LocalDateTime now = LocalDateTime.now();
@@ -73,17 +76,17 @@ public class CommentServiceImpl implements CommentService {
         comment.setText(commentDto.getText());
         comment.setUpdateDate(now);
         CommentDto resultCommentDto = CommentMapper.toCommentDto(commentRepository.save(comment));
-        resultCommentDto.setIsEventAuthor(userId.equals(comment.getEvent().getInitiator().getId()));
+        resultCommentDto.setIsEventAuthor(user.getId().equals(comment.getEvent().getInitiator().getId()));
         long likesCount = commentRepository.countLikesByComment(commentId);
         resultCommentDto.setLikeCount(likesCount);
         return resultCommentDto;
     }
 
     @Override
-    public void deleteComment(Long userId, Long commentId) {
-        getOptionalUser(userId).get();
+    public void deleteComment(Authentication authentication, Long commentId) {
+        User user = getOptionalUserByAuth(authentication).get();
         Comment comment = getOptionalComment(commentId).get();
-        if (!userId.equals(comment.getAuthor().getId())) {
+        if (!user.getId().equals(comment.getAuthor().getId())) {
             throw new ConflictException("Нельзя удалить чужой комментарий");
         }
         LocalDateTime now = LocalDateTime.now();
@@ -129,10 +132,10 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void addLikeToComment(Long userId, Long commentId) {
-        User user = getOptionalUser(userId).get();
+    public void addLikeToComment(Authentication authentication, Long commentId) {
+        User user = getOptionalUserByAuth(authentication).get();
         Comment comment = getOptionalComment(commentId).get();
-        if (userId.equals(comment.getAuthor().getId())) {
+        if (user.getId().equals(comment.getAuthor().getId())) {
             throw new ConflictException("Нельзя ставить лайк своему комментарию");
         }
         comment.getLikes().add(user);
@@ -140,8 +143,8 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public void removeLikeFromComment(Long userId, Long commentId) {
-        User user = getOptionalUser(userId).get();
+    public void removeLikeFromComment(Authentication authentication, Long commentId) {
+        User user = getOptionalUserByAuth(authentication).get();
         Comment comment = getOptionalComment(commentId).get();
         if (comment.getLikes().contains(user)) {
             comment.getLikes().remove(user);
@@ -152,10 +155,17 @@ public class CommentServiceImpl implements CommentService {
     /**
      * Получает Optional<User> для заданного идентификатора пользователя.
      *
-     * @param userId Идентификатор пользователя.
      * @return Optional<User>, содержащий пользователя, если найден.
      * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
      */
+    private Optional<User> getOptionalUserByAuth(Authentication authentication) {
+        Optional<User> userOptional = userService.findByUsername(authentication.getName());
+        if (userOptional.isEmpty()) {
+            throw new NotFoundException(String.format("Пользователь с ID=%s не найден", authentication.getName()));
+        }
+        return userOptional;
+    }
+
     private Optional<User> getOptionalUser(long userId) {
         Optional<User> userOptional = userRepository.findById(userId);
         if (userOptional.isEmpty()) {

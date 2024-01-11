@@ -1,5 +1,6 @@
 package ru.practicum.mainservice.service;
 
+import org.springframework.security.core.Authentication;
 import ru.practicum.mainservice.dto.comment.CommentDto;
 import ru.practicum.mainservice.dto.comment.NewCommentDto;
 import ru.practicum.mainservice.dto.comment.UpdateCommentDto;
@@ -21,7 +22,7 @@ public interface CommentService {
      * @param commentDto Данные нового комментария
      * @return объект CommentDto с информацией о добавленном комментарии
      */
-    CommentDto addComment(Long userId, Long eventId, NewCommentDto commentDto);
+    CommentDto addComment(Authentication userId, Long eventId, NewCommentDto commentDto);
 
     /**
      * Обновляет существующий комментарий.
@@ -31,7 +32,7 @@ public interface CommentService {
      * @param commentDto Данные для обновления комментария
      * @return объект CommentDto с информацией об обновленном комментарии
      */
-    CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto commentDto);
+    CommentDto updateComment(Authentication userId, Long commentId, UpdateCommentDto commentDto);
 
     /**
      * Удаляет комментарий.
@@ -39,7 +40,7 @@ public interface CommentService {
      * @param userId    Идентификатор пользователя, удаляющего комментарий
      * @param commentId Идентификатор удаляемого комментария
      */
-    void deleteComment(Long userId, Long commentId);
+    void deleteComment(Authentication userId, Long commentId);
 
     /**
      * Удаляет комментарий администратором.
@@ -69,7 +70,7 @@ public interface CommentService {
      * @param userId    Идентификатор пользователя, который ставит лайк.
      * @param commentId Идентификатор комментарий, которому ставят лайк.
      */
-    void addLikeToComment(Long userId, Long commentId);
+    void addLikeToComment(Authentication userId, Long commentId);
 
     /**
      * Убрать лайк у комментария.
@@ -77,5 +78,5 @@ public interface CommentService {
      * @param userId    Идентификатор пользователя, который убирает лайк.
      * @param commentId Идентификатор комментарий, у которого убирают лайк.
      */
-    void removeLikeFromComment(Long userId, Long commentId);
+    void removeLikeFromComment(Authentication userId, Long commentId);
 }

@@ -9,6 +9,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.mainservice.dto.comment.CommentDto;
@@ -26,8 +28,12 @@ import ru.practicum.mainservice.mapper.CommentMapper;
 import ru.practicum.mainservice.mapper.EventMapper;
 import ru.practicum.mainservice.mapper.RequestMapper;
 import ru.practicum.mainservice.model.*;
-import ru.practicum.mainservice.repository.*;
+import ru.practicum.mainservice.repository.CategoryRepository;
+import ru.practicum.mainservice.repository.CommentRepository;
+import ru.practicum.mainservice.repository.EventRepository;
+import ru.practicum.mainservice.repository.RequestRepository;
 import ru.practicum.mainservice.service.EventService;
+import ru.practicum.mainservice.service.UserService;
 import ru.practicum.statisticservice.dto.EndpointHitDto;
 import ru.practicum.statisticservice.dto.ViewStatsDto;
 import ru.practicum.statiticservice.client.StatisticClient;
@@ -42,7 +48,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final CategoryRepository categoryRepository;
     private final StatisticClient statisticClient;
     private final RequestRepository requestRepository;
@@ -52,8 +58,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public FullEventDto addEvent(NewEventDto eventDto, long userId) {
-        Optional<User> userOptional = getOptionalUser(userId);
+    public FullEventDto addEvent(NewEventDto eventDto, Authentication authorization) {
+        User userOptional = getUser(authorization.getName());
         Optional<Category> categoryOptional = getOptionalCategory(eventDto.getCategory());
 
         LocalDateTime now = LocalDateTime.now();
@@ -61,13 +67,13 @@ public class EventServiceImpl implements EventService {
             throw new BadRequestException("Дата и время на которые намечено событие не может быть раньше, " +
                     "чем через два часа от текущего момента");
         }
+
         Event event = EventMapper.toEvent(eventDto);
 
         event.setCreatedOn(now);
-
         event.setState(EventState.PENDING);
 
-        event.setInitiator(userOptional.get());
+        event.setInitiator(userOptional);
         event.setCategory(categoryOptional.get());
 
         FullEventDto fullEventDto = EventMapper.toFullEventDto(eventRepository.save(event));
@@ -79,10 +85,11 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public Collection<EventShortDto> getUsersAllEvent(long userId, Integer from, Integer size) {
-        getOptionalUser(userId);
+    public Collection<EventShortDto> getUsersAllEvent(Authentication authentication, Integer from, Integer size) {
+        String username = authentication.getName();
+        User user = getUser(username);
 
-        Collection<Event> eventCollection = eventRepository.findAllByInitiatorId(userId,
+        Collection<Event> eventCollection = eventRepository.findAllByInitiatorId(user.getId(),
                 PageRequest.of(from / size, size)).getContent();
 
         List<String> uris = eventCollection.stream()
@@ -130,8 +137,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public FullEventDto getUserEventById(long userId, long eventId) {
-        getOptionalUser(userId);
+    public FullEventDto getUserEventById(Authentication authentication, long eventId) {
+        getUser(authentication.getName());
         Event event = getOptionalEvent(eventId).get();
         FullEventDto fullEventDto = EventMapper.toFullEventDto(event);
         long hitCount = getHitCount(eventId);
@@ -144,10 +151,10 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public FullEventDto updateUsersEventById(long userId, long eventId, UpdateEventUserRequest request) {
-        getOptionalUser(userId);
+    public FullEventDto updateUsersEventById(Authentication authentication, long eventId, UpdateEventUserRequest request) {
+        User user = getUser(authentication.getName());
         Event event = getOptionalEvent(eventId).get();
-        if (event.getInitiator().getId() != userId) {
+        if (event.getInitiator().getId().equals(user.getId())) {
             throw new ConflictException("Это событие другого пользователя");
         }
         if (event.getState().equals(EventState.PUBLISHED)) {
@@ -178,8 +185,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional(readOnly = true)
-    public Collection<ParticipationRequestDto> getUsersEventRequests(long userId, long eventId) {
-        getOptionalUser(userId);
+    public Collection<ParticipationRequestDto> getUsersEventRequests(Authentication authentication, long eventId) {
+        getUser(authentication.getName());
         getOptionalEvent(eventId);
         Collection<Request> allByEventId = requestRepository.findAllByEventId(eventId);
 
@@ -190,14 +197,14 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult changeRequestsStatus(long userId, long eventId,
+    public EventRequestStatusUpdateResult changeRequestsStatus(Authentication authentication, long eventId,
                                                                EventRequestStatusUpdateRequest request) {
-        getOptionalUser(userId);
+        User user = getUser(authentication.getName());
         Event event = getOptionalEvent(eventId).get();
         if (!event.isRequestModeration() || event.getParticipantLimit() == 0) {
             throw new ConflictException("Это событие не требует подтверждения запросов");
         }
-        if (event.getInitiator().getId() != userId) {
+        if (event.getInitiator().getId().equals(user.getId())) {
             throw new ConflictException("Это событие другого пользователя");
         }
 
@@ -560,16 +567,14 @@ public class EventServiceImpl implements EventService {
     /**
      * Получает Optional<User> для заданного идентификатора пользователя.
      *
-     * @param userId Идентификатор пользователя.
+     * @param username Идентификатор пользователя.
      * @return Optional<User>, содержащий пользователя, если найден.
      * @throws NotFoundException Если пользователь с заданным идентификатором не найден.
      */
-    private Optional<User> getOptionalUser(long userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new NotFoundException(String.format("Пользователь с ID=%d не найден", userId));
-        }
-        return userOptional;
+    private User getUser(String username) {
+        return userService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException(
+                String.format("Пользователь '%s' не найден", username)
+        ));
     }
 
     /**

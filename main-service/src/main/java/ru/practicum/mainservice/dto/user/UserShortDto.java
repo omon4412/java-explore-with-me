@@ -8,7 +8,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class UserShortDto {
+public class UserShortDto implements UserInfo {
     /**
      * Идентификатор пользователя.
      */

@@ -34,9 +34,7 @@ public class UserControllerAdmin {
      */
     @PostMapping
     public ResponseEntity<UserDto> addUser(@Valid @RequestBody NewUserRequest userRequest) {
-        User user = UserMapper.toUser(userRequest);
-        UserDto result = UserMapper.toUserDto(userService.addUser(user));
-        return new ResponseEntity<>(result, HttpStatus.CREATED);
+        return new ResponseEntity<>(userService.addUser(userRequest), HttpStatus.CREATED);
     }
 
     /**

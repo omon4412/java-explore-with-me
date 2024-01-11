@@ -4,7 +4,11 @@ DROP TABLE IF EXISTS compilations CASCADE;
 
 DROP TABLE IF EXISTS compilations_event CASCADE;
 
+DROP TABLE IF EXISTS users_roles CASCADE;
+
 DROP TABLE IF EXISTS users CASCADE;
+
+DROP TABLE IF EXISTS roles CASCADE;
 
 DROP TABLE IF EXISTS categories CASCADE;
 
@@ -22,9 +26,26 @@ CREATE TABLE IF NOT EXISTS categories
 
 CREATE TABLE IF NOT EXISTS users
 (
-    user_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
-    name    VARCHAR(256) NOT NULL,
-    email   VARCHAR(256) NOT NULL UNIQUE
+    user_id       INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY UNIQUE,
+    name          VARCHAR(256) NOT NULL,
+    email         VARCHAR(256) NOT NULL UNIQUE,
+    password_hash varchar(512) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS roles
+(
+    role_id serial,
+    name    varchar(150) not null,
+    primary key (role_id)
+);
+
+CREATE TABLE users_roles
+(
+    user_id bigint not null,
+    role_id int    not null,
+    primary key (user_id, role_id),
+    foreign key (user_id) references users (user_id),
+    foreign key (role_id) references roles (role_id)
 );
 
 create table if not exists events
@@ -108,4 +129,3 @@ CREATE TABLE IF NOT EXISTS comments_likes
     primary key (comment_id, user_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
