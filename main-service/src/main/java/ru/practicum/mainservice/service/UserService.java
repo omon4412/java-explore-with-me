@@ -1,6 +1,5 @@
 package ru.practicum.mainservice.service;
 
-import org.springframework.security.core.userdetails.UserDetailsService;
 import ru.practicum.mainservice.dto.user.NewUserRequest;
 import ru.practicum.mainservice.dto.user.UserDto;
 import ru.practicum.mainservice.dto.user.UserInfo;
@@ -12,7 +11,7 @@ import java.util.Optional;
 /**
  * Сервис для управления пользователями.
  */
-public interface UserService extends UserDetailsService {
+public interface UserService {
 
     /**
      * Добавляет нового пользователя.

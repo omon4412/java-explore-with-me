@@ -21,7 +21,7 @@ public class UserMapper {
     public static User toUser(UserDto userDto) {
         return User.builder()
                 .id(userDto.getId())
-                .name(userDto.getName())
+                .username(userDto.getName())
                 .email(userDto.getEmail())
                 .build();
     }
@@ -34,7 +34,7 @@ public class UserMapper {
      */
     public static User toUser(NewUserRequest userRequest) {
         return User.builder()
-                .name(userRequest.getName())
+                .username(userRequest.getName())
                 .email(userRequest.getEmail())
                 .build();
     }
@@ -48,7 +48,7 @@ public class UserMapper {
     public static UserDto toUserDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
-                .name(user.getName())
+                .name(user.getUsername())
                 .email(user.getEmail())
                 .build();
     }
@@ -62,7 +62,7 @@ public class UserMapper {
     public static UserShortDto toUserShortDto(User user) {
         return UserShortDto.builder()
                 .id(user.getId())
-                .name(user.getName())
+                .name(user.getUsername())
                 .build();
     }
 }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Collection;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Collection;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User implements Serializable {
     /**
      * Идентификатор пользователя.
      */
@@ -29,8 +30,8 @@ public class User {
     /**
      * Имя пользователя.
      */
-    @Column(name = "name")
-    protected String name;
+    @Column(name = "username")
+    protected String username;
 
     /**
      * Почта пользователя.

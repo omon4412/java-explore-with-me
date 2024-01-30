@@ -2,6 +2,7 @@ package ru.practicum.mainservice.exception;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -190,7 +191,19 @@ public class ErrorHandler {
                 .errors(null)
                 .message("Отсутствует обязательный параметр -" + ex.getParameterName())
                 .reason("Отсутствует обязательный параметр")
-                .status(HttpStatus.CONFLICT.toString())
+                .status(HttpStatus.BAD_REQUEST.toString())
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiError handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        return ApiError.builder()
+                .errors(null)
+                .message("Invalid request body")
+                .reason("Invalid request body")
+                .status(HttpStatus.BAD_REQUEST.toString())
                 .timestamp(LocalDateTime.now())
                 .build();
     }
